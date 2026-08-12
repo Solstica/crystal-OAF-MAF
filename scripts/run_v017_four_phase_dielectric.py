@@ -104,7 +104,7 @@ def main() -> None:
         "model_version": "v0.1.7",
         "stage": "four-component source-model dielectric reconstruction",
         "rules": V017_RULES,
-        "melt_figure1b_linear_fit": fit.to_dict(),
+        "melt_figure1b_kirkwood_frohlich_fit": fit.to_dict(),
         "records": records,
         "guardrail": (
             "epsilon_crystal/ROAF/MOAF/IAF here are small-signal/source-model dielectric terms. "
