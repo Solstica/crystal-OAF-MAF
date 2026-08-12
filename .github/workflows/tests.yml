@@ -30,5 +30,9 @@ jobs:
         run: python scripts/run_v013_source_ingest.py
       - name: v0.1.4 temperature-dependent source state
         run: python scripts/run_v014_temperature_state.py
-      - name: v0.1.5 RAF/MAF to ROAF/MOAF reconstruction
+      - name: v0.1.5 RAF/MAF source consistency audit
         run: python scripts/run_v015_phase_fraction_state.py
+      - name: v0.1.6 regularized OAF devitrification
+        run: python scripts/run_v016_devitrification_state.py
+      - name: v0.1.7 four-component dielectric cell
+        run: python scripts/run_v017_four_phase_dielectric.py
