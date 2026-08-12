@@ -1,8 +1,9 @@
 """v0.1.3 source-driven OAF subpartition and BDS calibration configuration.
 
-No plot-derived numerical data are hard-coded here.  The repository must ingest
-Figure S1/S2/S3 points through the digitized CSV files before any temperature-dependent
-MOAF/ROAF/IAF parameter can be promoted to a physical configuration.
+Plot-derived numerical data are ingested only through the digitized CSV files.
+The values in SOURCE_MODEL_ASSUMPTIONS are the assumptions/partition used by
+Rui et al. 2022 SI; they are not universal local material constants and they do
+not overwrite the earlier v0.1 project baseline fractions.
 """
 
 from pathlib import Path
@@ -18,10 +19,22 @@ PRIMARY_SOURCE = {
 }
 
 SOURCE_MODEL_ASSUMPTIONS = {
-    # Explicitly stated in Section S2 of the SI. These are source-paper model
-    # assumptions, not direct local measurements.
+    # Explicitly stated in Sections S2-S3 of the SI. These are source-paper
+    # model assumptions/partitions, not direct phase-resolved measurements.
     "epsilon_crystal": 3.0,
     "epsilon_roaf": 3.0,
+    "eta_crystal": 0.6,
+    "eta_iaf_constant": 0.2,
+    "eta_oaf_approx": 0.2,
+    "eta_oaf_relation": "eta_ROAF(T) + eta_MOAF(T)",
+    "below_Tg": {
+        "x_RAF": "eta_OAF(T) + eta_IAF(T)",
+        "x_MAF": 0.0,
+    },
+    "above_Tg": {
+        "x_RAF": "eta_ROAF(T)",
+        "x_MAF": "eta_MOAF(T) + eta_IAF(T)",
+    },
 }
 
 DIGITIZED_FILES = {

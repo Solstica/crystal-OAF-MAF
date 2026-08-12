@@ -32,6 +32,59 @@ def test_digitized_point_requires_provenance(tmp_path: Path):
     assert np.isclose(points[0].value, 12.5)
 
 
+def test_committed_rui2022_digitization_is_complete():
+    root = Path(__file__).resolve().parents[1] / "data" / "literature" / "rui2022"
+    s1 = load_digitized_curve_csv(root / "figure_s1_digitized.csv")
+    s2 = load_digitized_curve_csv(root / "figure_s2_digitized.csv")
+    s3 = load_digitized_curve_csv(root / "figure_s3_digitized.csv")
+
+    assert len(s1) == 48
+    assert len(s2) == 30
+    assert len(s3) == 48
+    assert {p.quantity for p in s1} == {"n", "m_d", "g"}
+    assert {p.quantity for p in s2} == {"epsilon_MOAF"}
+    assert {p.quantity for p in s3} == {"lambda", "mu_r"}
+    assert all(p.provenance == "DIGITIZED_SOURCE" for p in s1 + s2 + s3)
+
+
+def test_digitized_curves_reproduce_source_level_trends():
+    root = Path(__file__).resolve().parents[1] / "data" / "literature" / "rui2022"
+    s1 = load_digitized_curve_csv(root / "figure_s1_digitized.csv")
+    s2 = load_digitized_curve_csv(root / "figure_s2_digitized.csv")
+    s3 = load_digitized_curve_csv(root / "figure_s3_digitized.csv")
+
+    for quantity in ("n", "g"):
+        for temperature in range(-30, 41, 10):
+            values = {
+                p.sample_state: p.value
+                for p in s1
+                if p.quantity == quantity and p.temperature_C == temperature
+            }
+            assert values["poled"] > values["unpoled"]
+
+    for temperature in range(-30, 41, 5):
+        values = {
+            p.sample_state: p.value
+            for p in s2
+            if p.quantity == "epsilon_MOAF" and p.temperature_C == temperature
+        }
+        assert values["poled"] > values["unpoled"]
+
+    for sample_state in ("unpoled", "poled"):
+        for panel in ("B_l1", "B_l2"):
+            points = sorted(
+                [
+                    p
+                    for p in s3
+                    if p.quantity == "mu_r"
+                    and p.sample_state == sample_state
+                    and p.panel == panel
+                ],
+                key=lambda p: p.temperature_C,
+            )
+            assert np.log10(points[-1].value / points[0].value) > 4.0
+
+
 def test_relaxation_bank_keeps_channels_separate():
     shape = (3, 4)
     E = np.ones(shape) * 1e6

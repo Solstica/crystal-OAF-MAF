@@ -1,1 +1,49 @@
 figure,panel,sample_state,temperature_C,quantity,value,unit,provenance
+S1,A,unpoled,-30,n,2.695,1e27 dipoles/m^3,DIGITIZED_SOURCE
+S1,A,unpoled,-20,n,3.08,1e27 dipoles/m^3,DIGITIZED_SOURCE
+S1,A,unpoled,-10,n,3.464,1e27 dipoles/m^3,DIGITIZED_SOURCE
+S1,A,unpoled,0,n,3.845,1e27 dipoles/m^3,DIGITIZED_SOURCE
+S1,A,unpoled,10,n,4.225,1e27 dipoles/m^3,DIGITIZED_SOURCE
+S1,A,unpoled,20,n,4.609,1e27 dipoles/m^3,DIGITIZED_SOURCE
+S1,A,unpoled,30,n,4.996,1e27 dipoles/m^3,DIGITIZED_SOURCE
+S1,A,unpoled,40,n,5.375,1e27 dipoles/m^3,DIGITIZED_SOURCE
+S1,A,poled,-30,n,3.159,1e27 dipoles/m^3,DIGITIZED_SOURCE
+S1,A,poled,-20,n,3.507,1e27 dipoles/m^3,DIGITIZED_SOURCE
+S1,A,poled,-10,n,3.853,1e27 dipoles/m^3,DIGITIZED_SOURCE
+S1,A,poled,0,n,4.199,1e27 dipoles/m^3,DIGITIZED_SOURCE
+S1,A,poled,10,n,4.546,1e27 dipoles/m^3,DIGITIZED_SOURCE
+S1,A,poled,20,n,4.894,1e27 dipoles/m^3,DIGITIZED_SOURCE
+S1,A,poled,30,n,5.241,1e27 dipoles/m^3,DIGITIZED_SOURCE
+S1,A,poled,40,n,5.587,1e27 dipoles/m^3,DIGITIZED_SOURCE
+S1,B,unpoled,-30,m_d,1.442,D,DIGITIZED_SOURCE
+S1,B,unpoled,-20,m_d,1.413,D,DIGITIZED_SOURCE
+S1,B,unpoled,-10,m_d,1.387,D,DIGITIZED_SOURCE
+S1,B,unpoled,0,m_d,1.361,D,DIGITIZED_SOURCE
+S1,B,unpoled,10,m_d,1.337,D,DIGITIZED_SOURCE
+S1,B,unpoled,20,m_d,1.314,D,DIGITIZED_SOURCE
+S1,B,unpoled,30,m_d,1.293,D,DIGITIZED_SOURCE
+S1,B,unpoled,40,m_d,1.274,D,DIGITIZED_SOURCE
+S1,B,poled,-30,m_d,1.534,D,DIGITIZED_SOURCE
+S1,B,poled,-20,m_d,1.534,D,DIGITIZED_SOURCE
+S1,B,poled,-10,m_d,1.534,D,DIGITIZED_SOURCE
+S1,B,poled,0,m_d,1.534,D,DIGITIZED_SOURCE
+S1,B,poled,10,m_d,1.534,D,DIGITIZED_SOURCE
+S1,B,poled,20,m_d,1.534,D,DIGITIZED_SOURCE
+S1,B,poled,30,m_d,1.534,D,DIGITIZED_SOURCE
+S1,B,poled,40,m_d,1.534,D,DIGITIZED_SOURCE
+S1,C,unpoled,-30,g,3.919,dimensionless,DIGITIZED_SOURCE
+S1,C,unpoled,-20,g,3.901,dimensionless,DIGITIZED_SOURCE
+S1,C,unpoled,-10,g,3.886,dimensionless,DIGITIZED_SOURCE
+S1,C,unpoled,0,g,3.869,dimensionless,DIGITIZED_SOURCE
+S1,C,unpoled,10,g,3.853,dimensionless,DIGITIZED_SOURCE
+S1,C,unpoled,20,g,3.838,dimensionless,DIGITIZED_SOURCE
+S1,C,unpoled,30,g,3.822,dimensionless,DIGITIZED_SOURCE
+S1,C,unpoled,40,g,3.805,dimensionless,DIGITIZED_SOURCE
+S1,C,poled,-30,g,4.28,dimensionless,DIGITIZED_SOURCE
+S1,C,poled,-20,g,4.263,dimensionless,DIGITIZED_SOURCE
+S1,C,poled,-10,g,4.245,dimensionless,DIGITIZED_SOURCE
+S1,C,poled,0,g,4.228,dimensionless,DIGITIZED_SOURCE
+S1,C,poled,10,g,4.211,dimensionless,DIGITIZED_SOURCE
+S1,C,poled,20,g,4.192,dimensionless,DIGITIZED_SOURCE
+S1,C,poled,30,g,4.176,dimensionless,DIGITIZED_SOURCE
+S1,C,poled,40,g,4.158,dimensionless,DIGITIZED_SOURCE
