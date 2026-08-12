@@ -1,8 +1,7 @@
-"""Strict ingestion of digitized literature curves.
+"""Strict ingestion of digitized/reported literature curves.
 
-Digitized points are treated as source-derived data with explicit provenance.  The
-loader intentionally refuses unlabeled numeric rows so that values copied from plots
-cannot silently become material constants.
+Plot-derived points and values stated explicitly in source text remain distinguishable.
+Every numeric row must retain figure/panel, sample state, unit, and provenance.
 """
 
 from __future__ import annotations
@@ -37,6 +36,12 @@ REQUIRED_COLUMNS = (
     "provenance",
 )
 
+ALLOWED_PROVENANCE = {
+    "DIGITIZED_SOURCE",
+    "DIRECT_TABULATED",
+    "DIRECT_REPORTED_TEXT",
+}
+
 
 def load_digitized_curve_csv(path: str | Path) -> list[DigitizedPoint]:
     p = Path(path)
@@ -51,7 +56,6 @@ def load_digitized_curve_csv(path: str | Path) -> list[DigitizedPoint]:
             raise ValueError(f"digitized CSV missing columns: {missing}")
         out: list[DigitizedPoint] = []
         for lineno, row in enumerate(reader, start=2):
-            # Blank template rows are ignored; partially filled rows are errors.
             if all((row.get(name) or "").strip() == "" for name in REQUIRED_COLUMNS):
                 continue
             if any((row.get(name) or "").strip() == "" for name in REQUIRED_COLUMNS):
@@ -64,10 +68,10 @@ def load_digitized_curve_csv(path: str | Path) -> list[DigitizedPoint]:
             if not np.isfinite(temperature) or not np.isfinite(value):
                 raise ValueError(f"non-finite digitized value at line {lineno}")
             provenance = row["provenance"].strip().upper()
-            if provenance not in {"DIGITIZED_SOURCE", "DIRECT_TABULATED"}:
+            if provenance not in ALLOWED_PROVENANCE:
                 raise ValueError(
                     f"unsupported provenance {provenance!r} at line {lineno}; "
-                    "use DIGITIZED_SOURCE or DIRECT_TABULATED"
+                    f"use one of {sorted(ALLOWED_PROVENANCE)}"
                 )
             out.append(
                 DigitizedPoint(
