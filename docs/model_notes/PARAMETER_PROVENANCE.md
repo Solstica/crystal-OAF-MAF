@@ -6,7 +6,9 @@ This file separates literature/atomistic evidence from executable phase-field pa
 
 - `DIRECT`: numerical value reported for the same material/observable and usable after unit conversion.
 - `INFERRED`: obtained by fitting, conservation, or inversion from reported data; the inference must be recorded.
+- `INFERRED_CONDITIONAL`: inferred only after fixing another non-identified parameter or geometry hypothesis.
 - `SOURCE_MODEL_ASSUMPTION`: a numerical assumption used by a cited paper, not a direct measurement.
+- `ATOMISTIC_REFERENCE`: atomistic/theoretical value reported in the cited literature and used only as a bound/reference.
 - `ATOMISTIC`: obtained from DFT, MD or MLP calculations produced for this project.
 - `PLACEHOLDER`: numerical-verification value only; it must not be interpreted physically.
 
@@ -72,12 +74,22 @@ v0.1 consequently keeps two layers separate:
 
 ## v0.1 morphology/orientation test
 
-The calibration script constructs a laminate with the literature phase fractions and solves the periodic dielectric cell problem along both axes.
+The first calibration constructs a laminate with the literature phase fractions and solves the periodic dielectric cell problem along both axes.
 
-- `x`: field parallel to the idealized lamellae;
-- `z`: field normal to the idealized lamellae.
+- `x`: field parallel to the idealized flat lamellae;
+- `z`: field normal to the idealized flat lamellae.
 
-The inferred OAF effective permittivity is therefore explicitly morphology- and orientation-dependent. Failure to reach the film target along one axis is treated as useful evidence that the idealized laminate/phase-property hypothesis is insufficient, not as a numerical failure.
+The extended morphology test adds commensurate tilted laminates and periodic sinusoidal waviness.  One OAF effective permittivity is first inferred from the flat, field-parallel case and then held fixed during the geometry scan.  This is a transferability test; the inferred value remains `INFERRED`, not a direct material constant.
+
+## v0.1 OAF relaxation scaffold
+
+The dynamic scaffold uses
+
+`epsilon*_OAF(omega) = epsilon_fast + Delta_epsilon/(1 + i omega tau)`.
+
+At this stage neither `Delta_epsilon` nor `tau` is calibrated.  The 10 Hz film permittivity supplies only one real-valued constraint and cannot identify both quantities.  The code therefore fixes a series of `tau` hypotheses and infers the corresponding `Delta_epsilon`; all such outputs are labelled `INFERRED_CONDITIONAL`.
+
+No scanned `tau` value is allowed to enter the physical TDGL configuration until frequency-resolved BDS or atomistic dynamics provides an independent constraint.
 
 ## Remaining quantities before a physical TDGL run
 
