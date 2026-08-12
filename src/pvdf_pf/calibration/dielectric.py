@@ -1,6 +1,6 @@
 """Linear-dielectric cell problems for v0.1.
 
-These utilities are deliberately separate from the TDGL `eps_b` map.  A measured
+These utilities are deliberately separate from the TDGL `eps_b` map. A measured
 small-signal relative permittivity contains dipolar response that may later be
 represented explicitly by the polarization order parameter; using it directly as a
 TDGL background permittivity would double count that response.
@@ -15,11 +15,16 @@ from scipy.sparse.linalg import LinearOperator, cg
 from pvdf_pf.morphology.three_phase import CRYSTAL, OAF, MAF
 
 
+def _harmonic_face(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """Harmonic face value for flux continuity across sharp dielectric interfaces."""
+    return 2.0 * a * b / (a + b)
+
+
 def _neg_div_eps_grad(phi: np.ndarray, eps: np.ndarray, dz: float, dx: float) -> np.ndarray:
-    eps_zp = 0.5 * (eps + np.roll(eps, -1, axis=0))
-    eps_zm = 0.5 * (eps + np.roll(eps, 1, axis=0))
-    eps_xp = 0.5 * (eps + np.roll(eps, -1, axis=1))
-    eps_xm = 0.5 * (eps + np.roll(eps, 1, axis=1))
+    eps_zp = _harmonic_face(eps, np.roll(eps, -1, axis=0))
+    eps_zm = _harmonic_face(eps, np.roll(eps, 1, axis=0))
+    eps_xp = _harmonic_face(eps, np.roll(eps, -1, axis=1))
+    eps_xm = _harmonic_face(eps, np.roll(eps, 1, axis=1))
 
     gp_z = (np.roll(phi, -1, axis=0) - phi) / dz
     gm_z = (phi - np.roll(phi, 1, axis=0)) / dz
@@ -34,12 +39,12 @@ def _neg_div_eps_grad(phi: np.ndarray, eps: np.ndarray, dz: float, dx: float) ->
 
 def _macro_flux_divergence(eps: np.ndarray, grid, axis: str, E0: float) -> np.ndarray:
     if axis == "z":
-        eps_p = 0.5 * (eps + np.roll(eps, -1, axis=0))
-        eps_m = 0.5 * (eps + np.roll(eps, 1, axis=0))
+        eps_p = _harmonic_face(eps, np.roll(eps, -1, axis=0))
+        eps_m = _harmonic_face(eps, np.roll(eps, 1, axis=0))
         return E0 * (eps_p - eps_m) / grid.dz
     if axis == "x":
-        eps_p = 0.5 * (eps + np.roll(eps, -1, axis=1))
-        eps_m = 0.5 * (eps + np.roll(eps, 1, axis=1))
+        eps_p = _harmonic_face(eps, np.roll(eps, -1, axis=1))
+        eps_m = _harmonic_face(eps, np.roll(eps, 1, axis=1))
         return E0 * (eps_p - eps_m) / grid.dx
     raise ValueError("axis must be 'z' or 'x'")
 
@@ -89,10 +94,10 @@ def effective_permittivity(
     psi -= psi.mean()
 
     if axis == "z":
-        eps_face = 0.5 * (eps + np.roll(eps, -1, axis=0))
+        eps_face = _harmonic_face(eps, np.roll(eps, -1, axis=0))
         grad_face = (np.roll(psi, -1, axis=0) - psi) / grid.dz
     else:
-        eps_face = 0.5 * (eps + np.roll(eps, -1, axis=1))
+        eps_face = _harmonic_face(eps, np.roll(eps, -1, axis=1))
         grad_face = (np.roll(psi, -1, axis=1) - psi) / grid.dx
 
     D_face = eps_face * (E0 - grad_face)
