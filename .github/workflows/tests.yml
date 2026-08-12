@@ -46,3 +46,5 @@ jobs:
         run: python scripts/run_v0111_oaf_compatibility.py
       - name: v0.1.12 same-state BOPVDF BDS bridge
         run: python scripts/run_v0112_same_state_bds.py
+      - name: v0.1.13 same-state full-spectrum BDS calibration
+        run: python scripts/run_v0113_full_spectrum.py
