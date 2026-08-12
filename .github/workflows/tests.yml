@@ -22,3 +22,5 @@ jobs:
         run: python scripts/run_baseline.py
       - name: v0.1 literature calibration
         run: python scripts/run_v01_calibration.py
+      - name: v0.1 morphology and relaxation scan
+        run: python scripts/run_v01_morphology_relaxation.py
