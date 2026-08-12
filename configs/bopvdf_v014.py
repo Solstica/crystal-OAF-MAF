@@ -21,7 +21,7 @@ V014_RULES = {
         "normalized n(T) diagnostic only; not a ROAF/MOAF volume fraction"
     ),
     "roaf_moaf_fraction_status": (
-        "unresolved until main-text Figure 5B xRAF(T)/xMAF(T) is digitized"
+        "resolved in v0.1.5 from Rui 2022 main-text Figure 5B over the source range"
     ),
     "mu_r_to_tau": "disabled until a validated constitutive relation is supplied",
     "tdgl_time_coupling": "disabled until physical seconds-per-TDGL-time is calibrated",
