@@ -14,6 +14,9 @@ This file separates literature/atomistic evidence from executable phase-field pa
 - `INFERRED_SPECTRUM`: fitted from a supplied/digitized broadband spectrum; valid only for the stated fit model and spectral decomposition.
 - `SOURCE_MODEL_ASSUMPTION`: a numerical assumption used by a cited paper, not a direct measurement.
 - `SOURCE_MODEL_DERIVED`: a quantity calculated inside the cited paper's model from measured and assumed inputs; not a direct local measurement.
+- `SOURCE_MODEL_EXTRAPOLATION`: a quantity obtained by carrying out an extrapolation explicitly prescribed by the cited source model; it remains model-dependent and is not a direct local measurement.
+- `PROJECT_REGULARIZATION_HYPOTHESIS`: a project-defined mapping introduced to reconcile source definitions or enforce physical admissibility; it must not be attributed to the source paper.
+- `PROJECT_SPATIAL_HYPOTHESIS`: a project-defined spatial allocation rule used only for sensitivity analysis until an atomistic or experimental localization rule is available.
 - `ATOMISTIC_REFERENCE`: atomistic/theoretical value reported in the cited literature and used only as a bound/reference.
 - `ATOMISTIC`: obtained from DFT, MD or MLP calculations produced for this project.
 - `NOT_YET_TRANSCRIBED`: the source/SI is known to contain the quantity, but traceable numerical values have not yet been entered.
@@ -62,8 +65,8 @@ This is a lower bound, not a direct OAF measurement. Any lower crystal contribut
 | BOPVDF amorphous-phase dielectric constant | ~21-22 at 25 C | DIRECT | Yang et al., ACS Appl. Mater. Interfaces 7, 19894-19905 (2015); do not equate this automatically with pure MAF |
 | crystal dielectric constant used in later BOPVDF model | 3.0 | SOURCE_MODEL_ASSUMPTION | Rui et al., Macromolecules 55, 9705-9714 (2022), SI S2 |
 | rigid OAF dielectric constant set equal to crystal | 3.0 | SOURCE_MODEL_ASSUMPTION | same SI S2 |
-| IAF dielectric constant | temperature-dependent, extrapolated from melt | SOURCE_MODEL_DERIVED | same source-model construction; numerical curve not yet transcribed |
-| mobile OAF dielectric constant | temperature-dependent model inversion | SOURCE_MODEL_DERIVED | same SI S2; Figure S2 contains the resulting curve |
+| IAF dielectric constant | `epsilon_IAF(T) ~= 17.4416 - 0.0432630 T_C` over project use window -30 to 40 C | SOURCE_MODEL_EXTRAPOLATION | SI S2 explicitly prescribes extrapolation from molten-PVDF main-text Figure 1B; Figure 1B was digitized in v0.1.7 |
+| mobile OAF dielectric constant | temperature-dependent model inversion | SOURCE_MODEL_DERIVED | same SI S2; Figure S2 digitized in v0.1.3 |
 
 The 2015 value `21-22` must not be silently assigned to a pure MAF region. The BOPVDF literature uses different amorphous/interphase partitions across papers, so every transfer must preserve the source definition.
 
@@ -131,6 +134,26 @@ Explicit main-text anchors are stored as `DIRECT_REPORTED_TEXT`:
 Other Figure 5B marker values are `DIGITIZED_SOURCE`. For the project OAF subpartition, Figure 5B is used as a temperature-dependent mobility constraint, while the exact ROAF/MOAF conversion must explicitly select either the raw calorimetric `x_c=0.59` state or the SI rounded `eta_cr=0.6` dielectric-model state.
 
 The project does **not** equate RAF with OAF or MAF with IAF: RAF/MAF are mobility-defined fractions; OAF/IAF are structure-defined fractions.
+
+## v0.1.6 project regularization
+
+Because literal substitution of the raw Figure 5B fractions into the SI rounded structural fractions produces a negative implied `eta_MOAF` near -30 C, the project does not clip or silently renormalize the source data. Instead it uses normalized RAF loss and MAF gain only as a devitrification progress `q(T)` and partitions the fixed structural OAF total as
+
+`eta_ROAF = 0.20 * (1-q)` and `eta_MOAF = 0.20 * q`.
+
+This mapping is `PROJECT_REGULARIZATION_HYPOTHESIS` and is not attributed to Rui et al.
+
+## v0.1.7 IAF extrapolation and four-component dielectric cell
+
+Main-text Figure 1B molten-PVDF values from 147 to 197 C were digitized and linearly fitted because SI S2 explicitly states that `epsilon_IAF(T)` is obtained by extrapolating the melt permittivity to lower temperatures. The executable fit is approximately
+
+`epsilon_IAF(T_C) = 17.4416 - 0.0432630*T_C`, `R^2 ~= 0.99749`.
+
+Representative values are approximately 18.74 (-30 C), 17.44 (0 C), 16.58 (20 C), and 15.71 (40 C). These are `SOURCE_MODEL_EXTRAPOLATION`.
+
+The v0.1.7 four-component small-signal cell uses crystal/ROAF source assumptions, source-derived `epsilon_MOAF(T)`, and source-model-extrapolated `epsilon_IAF(T)`. Spatial placement of MOAF within OAF remains unresolved by the source, so `IAF-proximal-first` and `crystal-proximal-first` are recorded only as `PROJECT_SPATIAL_HYPOTHESIS` sensitivity bounds.
+
+None of these small-signal effective permittivities may be copied directly into TDGL `eps_b` until fast/background and explicit relaxational polarization contributions are separated.
 
 ## Remaining quantities before a physical TDGL run
 
