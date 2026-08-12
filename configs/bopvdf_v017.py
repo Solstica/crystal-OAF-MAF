@@ -13,7 +13,10 @@ SOURCE_MODEL_PERMITTIVITY = {
     "crystal": 3.0,
     "roaf": 3.0,
     "moaf": "Rui2022 Figure S2 source-model-derived epsilon_MOAF(T)",
-    "iaf": "linear extrapolation of molten-PVDF Figure 1B as required by SI Section S2",
+    "iaf": (
+        "Rui2021 Figure 9A/SI Sec. IV Kirkwood-Frohlich construction: infer g(T) "
+        "from molten-PVDF epsilon(T), linearly extrapolate g(T), then invert for epsilon_IAF(T)"
+    ),
 }
 
 V017_RULES = {
@@ -23,4 +26,5 @@ V017_RULES = {
     "spatial_hypotheses": ("IAF-proximal-first", "crystal-proximal-first"),
     "baseline_geometry": "source-parallel ideal laminate",
     "local_field_geometry": "45-degree periodic wavy laminate used only for morphology sensitivity",
+    "iaf_source_transfer": "Kirkwood-Frohlich g(T) extrapolation; not direct epsilon(T) extrapolation",
 }
