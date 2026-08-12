@@ -14,6 +14,7 @@ from configs.bopvdf_v012 import BDS_PRIMARY_SOURCE, V012_RULES
 from pvdf_pf.calibration.bds import debye_complex_permittivity, fit_debye_spectrum
 from pvdf_pf.physics.dipolar import (
     complex_susceptibility_from_harmonic_history,
+    discrete_debye_susceptibility,
     simulate_debye_history,
 )
 
@@ -45,7 +46,15 @@ def main() -> None:
         frequency_hz=f_drive,
         discard_fraction=0.5,
     )
-    chi_fd = synthetic["delta_eps"] / (1.0 + 1j * 2.0 * np.pi * f_drive * synthetic["tau_s"])
+    chi_zoh = discrete_debye_susceptibility(
+        frequency_hz=f_drive,
+        dt_s=dt,
+        tau_s=synthetic["tau_s"],
+        delta_eps=synthetic["delta_eps"],
+    )
+    chi_continuum = synthetic["delta_eps"] / (
+        1.0 + 1j * 2.0 * np.pi * f_drive * synthetic["tau_s"]
+    )
 
     report = {
         "model_version": "v0.1.2",
@@ -59,9 +68,21 @@ def main() -> None:
         },
         "frequency_time_bridge": {
             "frequency_Hz": f_drive,
-            "frequency_domain_delta_epsilon_complex": [float(chi_fd.real), float(chi_fd.imag)],
+            "dt_s": dt,
+            "continuum_Debye_delta_epsilon_complex": [
+                float(chi_continuum.real),
+                float(chi_continuum.imag),
+            ],
+            "zero_order_hold_delta_epsilon_complex": [float(chi_zoh.real), float(chi_zoh.imag)],
             "time_domain_delta_epsilon_complex": [float(chi_td.real), float(chi_td.imag)],
-            "absolute_error": float(abs(chi_td - chi_fd)),
+            "time_domain_vs_ZOH_absolute_error": float(abs(chi_td - chi_zoh)),
+            "ZOH_vs_continuum_relative_error": float(
+                abs(chi_zoh - chi_continuum) / abs(chi_continuum)
+            ),
+            "interpretation": (
+                "The exact exponential update is exact for piecewise-constant (zero-order-hold) E. "
+                "Its discrete harmonic transfer converges to continuum Debye response as dt -> 0."
+            ),
         },
         "data_needed_for_physical_fit": [
             "BDS epsilon'(f,T) and epsilon''(f,T) for unpoled and poled BOPVDF",
