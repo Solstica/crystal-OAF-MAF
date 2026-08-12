@@ -4,16 +4,21 @@ from scipy.sparse.linalg import LinearOperator, cg
 from pvdf_pf.core.spectral import grad_periodic
 
 
+def _harmonic_face(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """Harmonic face value for normal dielectric flux across sharp interfaces."""
+    return 2.0 * a * b / (a + b)
+
+
 def _neg_div_eps_grad(phi: np.ndarray, eps: np.ndarray, dz: float, dx: float) -> np.ndarray:
-    """Periodic finite-volume operator -div(eps grad(phi)) using face-averaged eps."""
-    eps_zp = 0.5 * (eps + np.roll(eps, -1, axis=0))
-    eps_zm = 0.5 * (eps + np.roll(eps, 1, axis=0))
+    """Periodic finite-volume operator -div(eps grad(phi)) using harmonic face eps."""
+    eps_zp = _harmonic_face(eps, np.roll(eps, -1, axis=0))
+    eps_zm = _harmonic_face(eps, np.roll(eps, 1, axis=0))
     gp_z = (np.roll(phi, -1, axis=0) - phi) / dz
     gm_z = (phi - np.roll(phi, 1, axis=0)) / dz
     term_z = -(eps_zp * gp_z - eps_zm * gm_z) / dz
 
-    eps_xp = 0.5 * (eps + np.roll(eps, -1, axis=1))
-    eps_xm = 0.5 * (eps + np.roll(eps, 1, axis=1))
+    eps_xp = _harmonic_face(eps, np.roll(eps, -1, axis=1))
+    eps_xm = _harmonic_face(eps, np.roll(eps, 1, axis=1))
     gp_x = (np.roll(phi, -1, axis=1) - phi) / dx
     gm_x = (phi - np.roll(phi, 1, axis=1)) / dx
     term_x = -(eps_xp * gp_x - eps_xm * gm_x) / dx
