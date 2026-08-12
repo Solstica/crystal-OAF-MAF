@@ -24,3 +24,5 @@ jobs:
         run: python scripts/run_v01_calibration.py
       - name: v0.1 morphology and relaxation scan
         run: python scripts/run_v01_morphology_relaxation.py
+      - name: v0.1.2 BDS frequency-time bridge
+        run: python scripts/run_v012_bds_bridge.py
