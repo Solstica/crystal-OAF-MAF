@@ -6,6 +6,7 @@ This file separates literature/atomistic evidence from executable phase-field pa
 
 - `DIRECT`: numerical value reported for the same material/observable and usable after unit conversion.
 - `DIRECT_TABULATED`: numerical value explicitly tabulated by the primary source/SI and transcribed with traceable table/figure context.
+- `DIRECT_REPORTED_TEXT`: numerical value explicitly stated in the prose/caption of the primary source. This is preferred over plot digitization when both refer to the same temperature/state.
 - `DIGITIZED_SOURCE`: numerical point read from a published source figure; figure/panel, sample state, unit and digitization provenance must be retained.
 - `DIRECT_QUALITATIVE`: qualitative trend stated by the primary source; no numerical curve/value has been transferred into the executable model.
 - `INFERRED`: obtained by fitting, conservation, or inversion from reported data; the inference must be recorded.
@@ -102,18 +103,6 @@ No scanned `tau` value is allowed to enter the physical TDGL configuration until
 
 Primary source: Rui et al., *Macromolecules* 55, 9705-9714 (2022), DOI `10.1021/acs.macromol.2c01110`.
 
-| Quantity / relation | Current status | Allowed use in code |
-|---|---|---|
-| active-dipole concentration increases strongly from -30 to 40 C | DIRECT_QUALITATIVE | monotonic/trend constraint only; no numerical `n(T)` table yet |
-| calculated dipole moment is higher in poled than unpoled BOPVDF | DIRECT_QUALITATIVE | comparison constraint only |
-| Kirkwood-Frohlich `g` is higher in poled than unpoled BOPVDF | DIRECT_QUALITATIVE | comparison constraint only |
-| dipole-dipole interaction increases with temperature | DIRECT_QUALITATIVE | trend constraint only |
-| rotational dipole mobility increases by >4 orders of magnitude over -30 to 40 C | DIRECT_QUALITATIVE | order-of-magnitude trend constraint only |
-| Debye `eps_inf, Delta_eps, tau` fitted by `fit_bds_csv.py` | INFERRED_SPECTRUM | spectrum-level constitutive fit only; retain sample state, T, frequency window and fit model |
-| Kirkwood-Frohlich `g*mu^2` | INFERRED_CONDITIONAL | requires independently supplied active-dipole number density |
-| time-domain auxiliary `P_rel` | numerical bridge | may be tested with physical seconds; not coupled to TDGL yet |
-| TDGL seconds-per-time-unit mapping | uncalibrated | dynamic coupling disabled |
-
 The project uses the complex-permittivity convention `epsilon* = epsilon' - i epsilon''` with positive reported loss `epsilon_loss = -Im(epsilon*)`.
 
 The time-domain auxiliary response obeys
@@ -122,33 +111,34 @@ The time-domain auxiliary response obeys
 
 Its exact exponential step is exact for a zero-order-hold electric field during each numerical step. The corresponding discrete harmonic transfer function is tracked separately from the continuum Debye expression so that time-discretization phase lag is not mistaken for material relaxation.
 
-## v0.1.3 source-driven OAF subpartition
+## v0.1.3-v0.1.5 Rui 2022 source-driven OAF/RAF state
 
-The ACS Supporting Information explicitly states that, above the glass-transition regime where devitrification occurs, the OAF contains a rigid part (ROAF) and a mobile part (MOAF). The source model writes
+The SI defines the OAF subpartition `OAF = ROAF + MOAF` for its dielectric model and supplies Figure S1-S3 curves. The main article Figure 5B supplies calorimetrically determined `x_RAF(T)` and `x_MAF(T)` for melt-recrystallized BOPVDF with crystallinity `x_c = 0.59`.
 
-`epsilon_film(T) = epsilon_cr*eta_cr + epsilon_ROAF*eta_ROAF(T) + epsilon_MOAF(T)*eta_MOAF(T) + epsilon_IAF(T)*eta_IAF`.
+Important distinction:
 
-Repository mapping:
+- Main-text Figure 5B has `x_RAF + x_MAF ~= 0.41`, because the measured crystallinity used there is `x_c = 0.59`.
+- SI Section S2 subsequently approximates `eta_cr = 0.6`, `eta_IAF = 0.2`, and `eta_OAF ~= 0.2` for the dielectric inversion.
+- Therefore a code check of `x_RAF + x_MAF = 0.40` against raw Figure 5B data is incorrect. The raw calorimetric state and the SI rounded dielectric state must remain separate.
 
-| Project/source quantity | Status | Rule |
-|---|---|---|
-| total project OAF -> `ROAF + MOAF` | DIRECT_QUALITATIVE / source definition | allowed as an internal OAF subpartition |
-| project MAF -> source IAF | UNRESOLVED_MAPPING | provisional only; do not claim identity |
-| Figure S1 `n(T), m_d(T), g(T)` | NOT_YET_TRANSCRIBED | enter only as `DIGITIZED_SOURCE` or `DIRECT_TABULATED` |
-| Figure S2 `epsilon_MOAF(T)` | NOT_YET_TRANSCRIBED | source-model-derived curve; preserve this status after digitization |
-| SI `lambda(T), mu_r(T)` | NOT_YET_TRANSCRIBED | enter with full figure/panel/unit provenance |
-| `epsilon_cr = 3.0` | SOURCE_MODEL_ASSUMPTION | may reproduce source algebra; not a TDGL background constant by default |
-| `epsilon_ROAF = epsilon_cr` | SOURCE_MODEL_ASSUMPTION | same restriction |
+Explicit main-text anchors are stored as `DIRECT_REPORTED_TEXT`:
 
-v0.1.3 introduces separate MOAF and IAF linear-relaxation channels, but their physical `tau(T)` and `Delta_epsilon(T)` remain disabled until traceable source values are supplied. If the real BDS curves show broad/non-Debye relaxation, a relaxation-time distribution or HN/Prony representation will replace the single-Debye channel rather than forcing a narrow fit.
+- below -55 C: `x_RAF = 0.40`, `x_MAF = 0.008`;
+- `Tg = -45.2 C`: `x_RAF = 0.331`, `x_MAF = 0.079`;
+- -30 C: `x_RAF = 0.244`, `x_MAF = 0.166`;
+- 40 C: `x_RAF = 0.014`, `x_MAF = 0.396`.
+
+Other Figure 5B marker values are `DIGITIZED_SOURCE`. For the project OAF subpartition, Figure 5B is used as a temperature-dependent mobility constraint, while the exact ROAF/MOAF conversion must explicitly select either the raw calorimetric `x_c=0.59` state or the SI rounded `eta_cr=0.6` dielectric-model state.
+
+The project does **not** equate RAF with OAF or MAF with IAF: RAF/MAF are mobility-defined fractions; OAF/IAF are structure-defined fractions.
 
 ## Remaining quantities before a physical TDGL run
 
 1. phase-resolved or atomistically derived free-energy curvature / switching barrier for crystal and OAF;
 2. a defensible fast/background permittivity for each phase, separated from explicit dipolar polarization;
 3. gradient coefficient or domain-wall/interphase length-scale calibration;
-4. traceable frequency/temperature-resolved MOAF/IAF dynamics;
-5. a validated project-MAF/source-IAF mapping;
-6. a physical seconds-per-TDGL-time calibration before coupling BDS `tau` to TDGL;
+4. traceable frequency/temperature-resolved MOAF/IAF relaxation times;
+5. a validated spatial rule for which OAF regions devitrify first;
+6. a physical seconds-per-TDGL-time calibration before coupling BDS time scales to TDGL;
 7. HHTT content -> crystal/OAF/SC allocation;
 8. free-volume radius/fraction -> frequency-dependent dielectric response.
