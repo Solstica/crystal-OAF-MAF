@@ -20,11 +20,17 @@ def _harmonic_face(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     return 2.0 * a * b / (a + b)
 
 
+def _face_permittivities(eps: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    return (
+        _harmonic_face(eps, np.roll(eps, -1, axis=0)),
+        _harmonic_face(eps, np.roll(eps, 1, axis=0)),
+        _harmonic_face(eps, np.roll(eps, -1, axis=1)),
+        _harmonic_face(eps, np.roll(eps, 1, axis=1)),
+    )
+
+
 def _neg_div_eps_grad(phi: np.ndarray, eps: np.ndarray, dz: float, dx: float) -> np.ndarray:
-    eps_zp = _harmonic_face(eps, np.roll(eps, -1, axis=0))
-    eps_zm = _harmonic_face(eps, np.roll(eps, 1, axis=0))
-    eps_xp = _harmonic_face(eps, np.roll(eps, -1, axis=1))
-    eps_xm = _harmonic_face(eps, np.roll(eps, 1, axis=1))
+    eps_zp, eps_zm, eps_xp, eps_xm = _face_permittivities(eps)
 
     gp_z = (np.roll(phi, -1, axis=0) - phi) / dz
     gm_z = (phi - np.roll(phi, 1, axis=0)) / dz
@@ -56,7 +62,7 @@ def effective_permittivity(
     axis: str = "z",
     E0: float = 1.0,
     tol: float = 1e-10,
-    maxiter: int = 1000,
+    maxiter: int = 4000,
 ) -> tuple[float, np.ndarray]:
     r"""Return the periodic-cell effective relative permittivity.
 
@@ -65,6 +71,10 @@ def effective_permittivity(
         div[eps_r(r) (E0 e_axis - grad psi)] = 0.
 
     The returned effective permittivity is <D_axis>/E0 in relative units.
+
+    A Jacobi preconditioner based on the finite-volume diagonal is used. This is
+    important for pixelated four-component morphologies, where sharp dielectric
+    contrast can make the unpreconditioned CG iteration unnecessarily slow.
     """
     eps = np.asarray(eps_r, dtype=float)
     if eps.shape != grid.shape:
@@ -86,9 +96,39 @@ def effective_permittivity(
         return (y + gauge * psi.mean()).ravel()
 
     operator = LinearOperator((n, n), matvec=matvec, dtype=float)
-    psi, info = cg(operator, rhs.ravel(), rtol=tol, atol=0.0, maxiter=maxiter)
+
+    eps_zp, eps_zm, eps_xp, eps_xm = _face_permittivities(eps)
+    diag = (
+        (eps_zp + eps_zm) / (grid.dz * grid.dz)
+        + (eps_xp + eps_xm) / (grid.dx * grid.dx)
+        + gauge / n
+    )
+    if np.any(diag <= 0.0) or np.any(~np.isfinite(diag)):
+        raise RuntimeError("invalid dielectric-cell Jacobi diagonal")
+    inv_diag = 1.0 / diag.ravel()
+    preconditioner = LinearOperator(
+        (n, n), matvec=lambda x: inv_diag * x, dtype=float
+    )
+
+    psi, info = cg(
+        operator,
+        rhs.ravel(),
+        M=preconditioner,
+        rtol=tol,
+        atol=0.0,
+        maxiter=maxiter,
+    )
     if info != 0:
-        raise RuntimeError(f"dielectric cell-problem CG did not converge, info={info}")
+        # Report a normalized residual so failure is diagnosable rather than only
+        # exposing the iteration count returned by SciPy.
+        residual = operator.matvec(psi) - rhs.ravel()
+        rhs_norm = max(float(np.linalg.norm(rhs.ravel())), 1e-30)
+        rel_res = float(np.linalg.norm(residual) / rhs_norm)
+        raise RuntimeError(
+            "dielectric cell-problem preconditioned CG did not converge, "
+            f"info={info}, relative_residual={rel_res:.3e}, "
+            f"eps_range=({eps.min():.6g}, {eps.max():.6g})"
+        )
 
     psi = psi.reshape(shape)
     psi -= psi.mean()
