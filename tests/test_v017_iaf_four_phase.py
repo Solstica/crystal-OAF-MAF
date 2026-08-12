@@ -16,17 +16,18 @@ FIG1B = RUI / "figure_1b_melt_eps_digitized.csv"
 FIG5B = RUI / "figure_5b_maintext_digitized.csv"
 
 
-def test_figure1b_linear_fit_and_low_temperature_extrapolation():
+def test_figure1b_kirkwood_frohlich_fit_and_low_temperature_extrapolation():
     fit = fit_molten_pvdf_permittivity(FIG1B)
     assert fit.n_points == 11
-    assert fit.r_squared > 0.995
-    assert -0.045 < fit.slope_per_C < -0.041
-    assert 17.0 < fit.intercept < 18.0
+    assert fit.g_r_squared > 0.99
+    assert fit.g_slope_per_K < 0.0
+    assert np.isclose(fit.epsilon(25.0), 19.5, atol=0.15)
+    assert np.isclose(fit.epsilon(127.0), 12.1, atol=0.15)
 
     eps_m30, _ = epsilon_iaf_from_melt_extrapolation(FIG1B, temperature_C=-30.0)
     eps_40, _ = epsilon_iaf_from_melt_extrapolation(FIG1B, temperature_C=40.0)
-    assert 18.0 < eps_m30 < 19.5
-    assert 15.0 < eps_40 < 16.5
+    assert 25.5 < eps_m30 < 26.8
+    assert 17.7 < eps_40 < 18.6
     assert eps_m30 > eps_40
 
 
