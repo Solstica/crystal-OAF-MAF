@@ -5,11 +5,14 @@ This file separates literature/atomistic evidence from executable phase-field pa
 ## Status labels
 
 - `DIRECT`: numerical value reported for the same material/observable and usable after unit conversion.
+- `DIRECT_TABULATED`: numerical value explicitly tabulated by the primary source/SI and transcribed with traceable table/figure context.
+- `DIGITIZED_SOURCE`: numerical point read from a published source figure; figure/panel, sample state, unit and digitization provenance must be retained.
 - `DIRECT_QUALITATIVE`: qualitative trend stated by the primary source; no numerical curve/value has been transferred into the executable model.
 - `INFERRED`: obtained by fitting, conservation, or inversion from reported data; the inference must be recorded.
 - `INFERRED_CONDITIONAL`: inferred only after fixing another non-identified parameter or geometry hypothesis.
 - `INFERRED_SPECTRUM`: fitted from a supplied/digitized broadband spectrum; valid only for the stated fit model and spectral decomposition.
 - `SOURCE_MODEL_ASSUMPTION`: a numerical assumption used by a cited paper, not a direct measurement.
+- `SOURCE_MODEL_DERIVED`: a quantity calculated inside the cited paper's model from measured and assumed inputs; not a direct local measurement.
 - `ATOMISTIC_REFERENCE`: atomistic/theoretical value reported in the cited literature and used only as a bound/reference.
 - `ATOMISTIC`: obtained from DFT, MD or MLP calculations produced for this project.
 - `NOT_YET_TRANSCRIBED`: the source/SI is known to contain the quantity, but traceable numerical values have not yet been entered.
@@ -56,10 +59,10 @@ This is a lower bound, not a direct OAF measurement. Any lower crystal contribut
 | Quantity | Value | Status | Source / interpretation |
 |---|---:|---|---|
 | BOPVDF amorphous-phase dielectric constant | ~21-22 at 25 C | DIRECT | Yang et al., ACS Appl. Mater. Interfaces 7, 19894-19905 (2015); do not equate this automatically with pure MAF |
-| crystal dielectric constant used in a later three-phase model | 3.0 | SOURCE_MODEL_ASSUMPTION | Rui et al., Macromolecules 55, 9705-9714 (2022), SI S2 |
-| rigid interphase dielectric constant set equal to crystal | 3.0 | SOURCE_MODEL_ASSUMPTION | same SI S2 |
-| IAF dielectric constant | temperature-dependent, extrapolated from melt | SOURCE_MODEL_ASSUMPTION | same source-model construction; numerical curve not promoted as a direct measurement |
-| mobile-interphase effective dielectric response | temperature-dependent inverse/model result | INFERRED_CONDITIONAL | same source-model framework; not a directly measured local material constant |
+| crystal dielectric constant used in later BOPVDF model | 3.0 | SOURCE_MODEL_ASSUMPTION | Rui et al., Macromolecules 55, 9705-9714 (2022), SI S2 |
+| rigid OAF dielectric constant set equal to crystal | 3.0 | SOURCE_MODEL_ASSUMPTION | same SI S2 |
+| IAF dielectric constant | temperature-dependent, extrapolated from melt | SOURCE_MODEL_DERIVED | same source-model construction; numerical curve not yet transcribed |
+| mobile OAF dielectric constant | temperature-dependent model inversion | SOURCE_MODEL_DERIVED | same SI S2; Figure S2 contains the resulting curve |
 
 The 2015 value `21-22` must not be silently assigned to a pure MAF region. The BOPVDF literature uses different amorphous/interphase partitions across papers, so every transfer must preserve the source definition.
 
@@ -106,12 +109,10 @@ Primary source: Rui et al., *Macromolecules* 55, 9705-9714 (2022), DOI `10.1021/
 | Kirkwood-Frohlich `g` is higher in poled than unpoled BOPVDF | DIRECT_QUALITATIVE | comparison constraint only |
 | dipole-dipole interaction increases with temperature | DIRECT_QUALITATIVE | trend constraint only |
 | rotational dipole mobility increases by >4 orders of magnitude over -30 to 40 C | DIRECT_QUALITATIVE | order-of-magnitude trend constraint only |
-| numerical `n(T), m_d(T), g(T), lambda(T), mu_r(T)` | NOT_YET_TRANSCRIBED | prohibited from executable physical config until traced to source/SI |
-| RAF dynamics -> project OAF dynamics | UNRESOLVED_MAPPING | do not assign RAF relaxation wholesale to OAF |
 | Debye `eps_inf, Delta_eps, tau` fitted by `fit_bds_csv.py` | INFERRED_SPECTRUM | spectrum-level constitutive fit only; retain sample state, T, frequency window and fit model |
 | Kirkwood-Frohlich `g*mu^2` | INFERRED_CONDITIONAL | requires independently supplied active-dipole number density |
 | time-domain auxiliary `P_rel` | numerical bridge | may be tested with physical seconds; not coupled to TDGL yet |
-| TDGL seconds-per-time-unit mapping | NOT_YET_TRANSCRIBED / uncalibrated | dynamic coupling disabled |
+| TDGL seconds-per-time-unit mapping | uncalibrated | dynamic coupling disabled |
 
 The project uses the complex-permittivity convention `epsilon* = epsilon' - i epsilon''` with positive reported loss `epsilon_loss = -Im(epsilon*)`.
 
@@ -121,12 +122,33 @@ The time-domain auxiliary response obeys
 
 Its exact exponential step is exact for a zero-order-hold electric field during each numerical step. The corresponding discrete harmonic transfer function is tracked separately from the continuum Debye expression so that time-discretization phase lag is not mistaken for material relaxation.
 
+## v0.1.3 source-driven OAF subpartition
+
+The ACS Supporting Information explicitly states that, above the glass-transition regime where devitrification occurs, the OAF contains a rigid part (ROAF) and a mobile part (MOAF). The source model writes
+
+`epsilon_film(T) = epsilon_cr*eta_cr + epsilon_ROAF*eta_ROAF(T) + epsilon_MOAF(T)*eta_MOAF(T) + epsilon_IAF(T)*eta_IAF`.
+
+Repository mapping:
+
+| Project/source quantity | Status | Rule |
+|---|---|---|
+| total project OAF -> `ROAF + MOAF` | DIRECT_QUALITATIVE / source definition | allowed as an internal OAF subpartition |
+| project MAF -> source IAF | UNRESOLVED_MAPPING | provisional only; do not claim identity |
+| Figure S1 `n(T), m_d(T), g(T)` | NOT_YET_TRANSCRIBED | enter only as `DIGITIZED_SOURCE` or `DIRECT_TABULATED` |
+| Figure S2 `epsilon_MOAF(T)` | NOT_YET_TRANSCRIBED | source-model-derived curve; preserve this status after digitization |
+| SI `lambda(T), mu_r(T)` | NOT_YET_TRANSCRIBED | enter with full figure/panel/unit provenance |
+| `epsilon_cr = 3.0` | SOURCE_MODEL_ASSUMPTION | may reproduce source algebra; not a TDGL background constant by default |
+| `epsilon_ROAF = epsilon_cr` | SOURCE_MODEL_ASSUMPTION | same restriction |
+
+v0.1.3 introduces separate MOAF and IAF linear-relaxation channels, but their physical `tau(T)` and `Delta_epsilon(T)` remain disabled until traceable source values are supplied. If the real BDS curves show broad/non-Debye relaxation, a relaxation-time distribution or HN/Prony representation will replace the single-Debye channel rather than forcing a narrow fit.
+
 ## Remaining quantities before a physical TDGL run
 
 1. phase-resolved or atomistically derived free-energy curvature / switching barrier for crystal and OAF;
 2. a defensible fast/background permittivity for each phase, separated from explicit dipolar polarization;
 3. gradient coefficient or domain-wall/interphase length-scale calibration;
-4. traceable frequency/temperature-resolved amorphous/interphase dynamics and a validated RAF-to-OAF mapping;
-5. a physical seconds-per-TDGL-time calibration before coupling BDS `tau` to TDGL;
-6. HHTT content -> crystal/OAF/SC allocation;
-7. free-volume radius/fraction -> frequency-dependent dielectric response.
+4. traceable frequency/temperature-resolved MOAF/IAF dynamics;
+5. a validated project-MAF/source-IAF mapping;
+6. a physical seconds-per-TDGL-time calibration before coupling BDS `tau` to TDGL;
+7. HHTT content -> crystal/OAF/SC allocation;
+8. free-volume radius/fraction -> frequency-dependent dielectric response.
