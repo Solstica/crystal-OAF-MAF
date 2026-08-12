@@ -99,8 +99,14 @@ def audit_film_closure(
         sample_state=sample,
     )
     dev = build_regularized_oaf_state(root / "figure_5b_maintext_digitized.csv", temperature_C=T)
-    eta_roaf = float(eta_total_oaf * (1.0 - dev.q))
-    eta_moaf = float(eta_total_oaf * dev.q)
+    if not np.isclose(dev.crystal, eta_crystal, atol=1e-12):
+        raise ValueError("closure audit eta_crystal differs from v0.1.6 structural state")
+    if not np.isclose(dev.iaf, eta_iaf, atol=1e-12):
+        raise ValueError("closure audit eta_iaf differs from v0.1.6 structural state")
+    if not np.isclose(dev.total_oaf, eta_total_oaf, atol=1e-12):
+        raise ValueError("closure audit eta_total_oaf differs from v0.1.6 structural state")
+    eta_roaf = float(dev.roaf)
+    eta_moaf = float(dev.moaf)
 
     eps_project = float(
         eta_crystal * phase_state.epsilon_crystal
