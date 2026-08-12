@@ -1,0 +1,17 @@
+figure,panel,sample_state,temperature_C,quantity,value,unit,provenance
+Figure3,A,unpoled,-30,epsilon_c_film,11.925,relative_permittivity,DIGITIZED_SOURCE
+Figure3,A,unpoled,-20,epsilon_c_film,12.641,relative_permittivity,DIGITIZED_SOURCE
+Figure3,A,unpoled,-10,epsilon_c_film,12.861,relative_permittivity,DIGITIZED_SOURCE
+Figure3,A,unpoled,0,epsilon_c_film,13.107,relative_permittivity,DIGITIZED_SOURCE
+Figure3,A,unpoled,10,epsilon_c_film,13.305,relative_permittivity,DIGITIZED_SOURCE
+Figure3,A,unpoled,20,epsilon_c_film,13.423,relative_permittivity,DIGITIZED_SOURCE
+Figure3,A,unpoled,30,epsilon_c_film,13.525,relative_permittivity,DIGITIZED_SOURCE
+Figure3,A,unpoled,40,epsilon_c_film,13.749,relative_permittivity,DIGITIZED_SOURCE
+Figure3,A,poled,-30,epsilon_c_film,14.412,relative_permittivity,DIGITIZED_SOURCE
+Figure3,A,poled,-20,epsilon_c_film,14.799,relative_permittivity,DIGITIZED_SOURCE
+Figure3,A,poled,-10,epsilon_c_film,15.736,relative_permittivity,DIGITIZED_SOURCE
+Figure3,A,poled,0,epsilon_c_film,16.238,relative_permittivity,DIGITIZED_SOURCE
+Figure3,A,poled,10,epsilon_c_film,16.744,relative_permittivity,DIGITIZED_SOURCE
+Figure3,A,poled,20,epsilon_c_film,17.120,relative_permittivity,DIGITIZED_SOURCE
+Figure3,A,poled,30,epsilon_c_film,18.045,relative_permittivity,DIGITIZED_SOURCE
+Figure3,A,poled,40,epsilon_c_film,18.226,relative_permittivity,DIGITIZED_SOURCE
