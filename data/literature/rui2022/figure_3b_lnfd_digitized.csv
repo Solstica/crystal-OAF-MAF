@@ -1,0 +1,17 @@
+figure,panel,sample_state,temperature_C,quantity,value,unit,provenance
+Figure3,B,unpoled,-30,ln_f_d,7.757,ln_Hz,DIGITIZED_SOURCE
+Figure3,B,unpoled,-20,ln_f_d,10.180,ln_Hz,DIGITIZED_SOURCE
+Figure3,B,unpoled,-10,ln_f_d,11.501,ln_Hz,DIGITIZED_SOURCE
+Figure3,B,unpoled,0,ln_f_d,12.860,ln_Hz,DIGITIZED_SOURCE
+Figure3,B,unpoled,10,ln_f_d,13.777,ln_Hz,DIGITIZED_SOURCE
+Figure3,B,unpoled,20,ln_f_d,14.402,ln_Hz,DIGITIZED_SOURCE
+Figure3,B,unpoled,30,ln_f_d,15.429,ln_Hz,DIGITIZED_SOURCE
+Figure3,B,unpoled,40,ln_f_d,16.164,ln_Hz,DIGITIZED_SOURCE
+Figure3,B,poled,-30,ln_f_d,4.820,ln_Hz,DIGITIZED_SOURCE
+Figure3,B,poled,-20,ln_f_d,7.904,ln_Hz,DIGITIZED_SOURCE
+Figure3,B,poled,-10,ln_f_d,9.960,ln_Hz,DIGITIZED_SOURCE
+Figure3,B,poled,0,ln_f_d,11.318,ln_Hz,DIGITIZED_SOURCE
+Figure3,B,poled,10,ln_f_d,12.566,ln_Hz,DIGITIZED_SOURCE
+Figure3,B,poled,20,ln_f_d,13.153,ln_Hz,DIGITIZED_SOURCE
+Figure3,B,poled,30,ln_f_d,14.548,ln_Hz,DIGITIZED_SOURCE
+Figure3,B,poled,40,ln_f_d,15.393,ln_Hz,DIGITIZED_SOURCE
