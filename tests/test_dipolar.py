@@ -4,6 +4,7 @@ from pvdf_pf.physics.dipolar import (
     EPS0,
     advance_debye_polarization,
     complex_susceptibility_from_harmonic_history,
+    discrete_debye_susceptibility,
     simulate_debye_history,
 )
 
@@ -36,7 +37,7 @@ def test_oaf_mask_zeroes_non_oaf_cells():
     assert np.all(out[mask] > 0.0)
 
 
-def test_harmonic_time_domain_matches_debye_frequency_response():
+def test_harmonic_time_domain_matches_zero_order_hold_response():
     frequency = 25.0
     tau = 3.0e-3
     delta_eps = 9.0
@@ -53,6 +54,15 @@ def test_harmonic_time_domain_matches_debye_frequency_response():
         frequency_hz=frequency,
         discard_fraction=0.5,
     )
-    expected = delta_eps / (1.0 + 1j * 2.0 * np.pi * frequency * tau)
-    assert np.isclose(chi.real, expected.real, rtol=3e-3, atol=3e-3)
-    assert np.isclose(chi.imag, expected.imag, rtol=3e-3, atol=3e-3)
+    expected_discrete = discrete_debye_susceptibility(
+        frequency_hz=frequency,
+        dt_s=dt,
+        tau_s=tau,
+        delta_eps=delta_eps,
+    )
+    expected_continuum = delta_eps / (1.0 + 1j * 2.0 * np.pi * frequency * tau)
+
+    assert np.isclose(chi.real, expected_discrete.real, rtol=1e-8, atol=1e-8)
+    assert np.isclose(chi.imag, expected_discrete.imag, rtol=1e-8, atol=1e-8)
+    # The numerical step must also converge toward the continuum Debye response.
+    assert abs(expected_discrete - expected_continuum) / abs(expected_continuum) < 1e-2
