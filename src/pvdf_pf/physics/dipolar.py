@@ -28,8 +28,8 @@ def advance_debye_polarization(
 ) -> np.ndarray:
     """Advance one Debye auxiliary-polarization step using the exact exponential map.
 
-    E_local is assumed constant during the step.  `mask` can restrict the response
-    to OAF cells.  Outside the mask the returned auxiliary polarization is zero.
+    E_local is assumed constant during the step. `mask` can restrict the response
+    to OAF cells. Outside the mask the returned auxiliary polarization is zero.
     """
     if dt_s <= 0.0:
         raise ValueError("dt_s must be positive")
@@ -58,6 +58,37 @@ def advance_debye_polarization(
     return np.asarray(updated, dtype=float)
 
 
+def discrete_debye_susceptibility(
+    *,
+    frequency_hz: float,
+    dt_s: float,
+    tau_s: float,
+    delta_eps: float,
+) -> complex:
+    r"""Exact harmonic response of the repository's zero-order-hold Debye step.
+
+    For
+
+        P_n = a P_{n-1} + (1-a) eps0 Delta_eps E_n,
+        a = exp(-dt/tau),
+
+    the discrete susceptibility is
+
+        Delta_eps_d(z) = Delta_eps (1-a) / (1-a exp(-i omega dt)).
+
+    It converges to Delta_eps/(1+i omega tau) as dt -> 0.  Keeping this distinction
+    explicit prevents a time-discretization phase shift from being mistaken for a
+    material relaxation effect.
+    """
+    if frequency_hz <= 0.0 or dt_s <= 0.0 or tau_s <= 0.0:
+        raise ValueError("frequency_hz, dt_s and tau_s must be positive")
+    if delta_eps < 0.0:
+        raise ValueError("delta_eps must be non-negative")
+    a = float(np.exp(-dt_s / tau_s))
+    theta = 2.0 * np.pi * frequency_hz * dt_s
+    return complex(delta_eps * (1.0 - a) / (1.0 - a * np.exp(-1j * theta)))
+
+
 def simulate_debye_history(
     E_history: np.ndarray,
     *,
@@ -67,7 +98,7 @@ def simulate_debye_history(
     P0_Cpm2: float = 0.0,
     eps0: float = EPS0,
 ) -> np.ndarray:
-    """Integrate a scalar electric-field history for validation and BDS bridging."""
+    """Integrate a scalar electric-field history using zero-order hold per step."""
     field = np.asarray(E_history, dtype=float).reshape(-1)
     if field.size == 0:
         raise ValueError("E_history must not be empty")
@@ -97,9 +128,9 @@ def complex_susceptibility_from_harmonic_history(
     eps0: float = EPS0,
     discard_fraction: float = 0.5,
 ) -> complex:
-    """Estimate Delta-epsilon* from a steady harmonic time-domain trajectory.
+    """Estimate auxiliary Delta-epsilon* from a steady harmonic trajectory.
 
-    The convention is epsilon* = epsilon' - i epsilon''.  The returned quantity is
+    The convention is epsilon* = epsilon' - i epsilon''. The returned quantity is
     the auxiliary dipolar contribution P/(eps0 E), not total permittivity.
     """
     E = np.asarray(E_history, dtype=float).reshape(-1)
@@ -120,6 +151,4 @@ def complex_susceptibility_from_harmonic_history(
     Phat = np.sum(P * basis)
     if abs(Ehat) < 1e-30:
         raise ValueError("harmonic electric-field amplitude is numerically zero")
-    # With e^{-i wt} projection and E=cos(wt), the dynamic equation produces a
-    # phasor proportional to 1/(1+i wtau), matching the repository convention.
     return complex(Phat / (eps0 * Ehat))
