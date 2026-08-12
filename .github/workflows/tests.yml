@@ -40,3 +40,5 @@ jobs:
         run: python scripts/run_v018_source_closure.py
       - name: v0.1.9 Rui source-chain reconstruction
         run: python scripts/run_v019_source_reconstruction.py
+      - name: v0.1.10 source-state transfer audit
+        run: python scripts/run_v0110_source_state_transfer.py
