@@ -1,0 +1,12 @@
+figure,panel,sample_state,temperature_C,quantity,value,unit,provenance
+Figure1,B,molten_PVDF,147,epsilon_c_melt,11.1308,relative_permittivity,DIGITIZED_SOURCE
+Figure1,B,molten_PVDF,152,epsilon_c_melt,10.8926,relative_permittivity,DIGITIZED_SOURCE
+Figure1,B,molten_PVDF,157,epsilon_c_melt,10.6437,relative_permittivity,DIGITIZED_SOURCE
+Figure1,B,molten_PVDF,162,epsilon_c_melt,10.4276,relative_permittivity,DIGITIZED_SOURCE
+Figure1,B,molten_PVDF,167,epsilon_c_melt,10.1795,relative_permittivity,DIGITIZED_SOURCE
+Figure1,B,molten_PVDF,172,epsilon_c_melt,9.9653,relative_permittivity,DIGITIZED_SOURCE
+Figure1,B,molten_PVDF,177,epsilon_c_melt,9.7388,relative_permittivity,DIGITIZED_SOURCE
+Figure1,B,molten_PVDF,182,epsilon_c_melt,9.5416,relative_permittivity,DIGITIZED_SOURCE
+Figure1,B,molten_PVDF,187,epsilon_c_melt,9.3443,relative_permittivity,DIGITIZED_SOURCE
+Figure1,B,molten_PVDF,192,epsilon_c_melt,9.1595,relative_permittivity,DIGITIZED_SOURCE
+Figure1,B,molten_PVDF,197,epsilon_c_melt,8.9805,relative_permittivity,DIGITIZED_SOURCE
