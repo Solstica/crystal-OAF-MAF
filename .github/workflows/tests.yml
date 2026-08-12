@@ -26,3 +26,5 @@ jobs:
         run: python scripts/run_v01_morphology_relaxation.py
       - name: v0.1.2 BDS frequency-time bridge
         run: python scripts/run_v012_bds_bridge.py
+      - name: v0.1.3 source ingest and OAF subpartition
+        run: python scripts/run_v013_source_ingest.py
