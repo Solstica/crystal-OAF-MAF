@@ -42,3 +42,5 @@ jobs:
         run: python scripts/run_v019_source_reconstruction.py
       - name: v0.1.10 source-state transfer audit
         run: python scripts/run_v0110_source_state_transfer.py
+      - name: v0.1.11 closed-OAF transfer compatibility audit
+        run: python scripts/run_v0111_oaf_compatibility.py
