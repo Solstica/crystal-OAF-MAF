@@ -38,3 +38,5 @@ jobs:
         run: python scripts/run_v017_four_phase_dielectric.py
       - name: v0.1.8 measured-film closure audit
         run: python scripts/run_v018_source_closure.py
+      - name: v0.1.9 Rui source-chain reconstruction
+        run: python scripts/run_v019_source_reconstruction.py
