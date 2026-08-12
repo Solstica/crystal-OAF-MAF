@@ -40,6 +40,7 @@ def main() -> None:
     for point in spectra:
         grouped[(point.sample_state, point.temperature_C)].append(point)
 
+    prony_kwargs = {k: v for k, v in PRONY.items() if k != "max_normalized_complex_error"}
     results = {}
     max_rms = 0.0
     max_abs = 0.0
@@ -57,11 +58,7 @@ def main() -> None:
                 epsilon_static_film=eps_s,
                 model="cole-cole",
             )
-            rep = fit_positive_prony_from_cole_cole(cc, **PRONY | {
-                "max_normalized_complex_error": PRONY.get("max_normalized_complex_error")
-            } if False else {
-                k: v for k, v in PRONY.items() if k != "max_normalized_complex_error"
-            })
+            rep = fit_positive_prony_from_cole_cole(cc, **prony_kwargs)
             strengths = rep.delta_epsilon_modes
             all_passive = all_passive and all(v >= 0.0 for v in strengths)
             all_static_closed = all_static_closed and abs(rep.static_strength_error) < 1e-10
