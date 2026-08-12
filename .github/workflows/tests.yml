@@ -44,3 +44,5 @@ jobs:
         run: python scripts/run_v0110_source_state_transfer.py
       - name: v0.1.11 closed-OAF transfer compatibility audit
         run: python scripts/run_v0111_oaf_compatibility.py
+      - name: v0.1.12 same-state BOPVDF BDS bridge
+        run: python scripts/run_v0112_same_state_bds.py
