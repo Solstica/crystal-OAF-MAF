@@ -1,7 +1,7 @@
 """Self-consistent local-field coupling for generalized-Debye polarization.
 
 v0.1.15 couples the physical-time auxiliary polarization bank to Gauss' law while
-keeping the ferroelectric TDGL order parameter frozen.  The source response is still
+keeping the ferroelectric TDGL order parameter frozen. The source response is still
 the same-state combined OAF+IAF amorphous response established in v0.1.13-v0.1.14.
 
 For one zero-order-hold step, each Debye mode obeys
@@ -9,14 +9,14 @@ For one zero-order-hold step, each Debye mode obeys
     P_j^n = a_j P_j^(n-1) + (1-a_j) eps0 Delta_eps_j E^n,
     a_j = exp(-dt/tau_j).
 
-Substituting this relation into Gauss' law gives one *linear* heterogeneous Poisson
+Substituting this relation into Gauss' law gives one linear heterogeneous Poisson
 problem per time step,
 
     div{ eps0 [eps_b + sum_j (1-a_j) Delta_eps_j] E^n
          + sum_j a_j P_j^(n-1) } = 0.
 
 Thus the local field and the new auxiliary polarizations are self-consistent without
-a fixed-point iteration.  This is a numerical constitutive coupling; it does not
+a fixed-point iteration. This is a numerical constitutive coupling; it does not
 calibrate the dimensionless TDGL clock.
 """
 from __future__ import annotations
@@ -57,13 +57,17 @@ class CoupledRelaxationStep:
 
 
 def _divergence_of_uniform_macro_flux(
-    eps_abs: np.ndarray,
+    eps_coefficient: np.ndarray,
     *,
     E_external_z: float,
     dz: float,
 ) -> np.ndarray:
-    eps_zp = _harmonic_face(eps_abs, np.roll(eps_abs, -1, axis=0))
-    eps_zm = _harmonic_face(eps_abs, np.roll(eps_abs, 1, axis=0))
+    eps_zp = _harmonic_face(
+        eps_coefficient, np.roll(eps_coefficient, -1, axis=0)
+    )
+    eps_zm = _harmonic_face(
+        eps_coefficient, np.roll(eps_coefficient, 1, axis=0)
+    )
     return float(E_external_z) * (eps_zp - eps_zm) / float(dz)
 
 
@@ -94,9 +98,13 @@ def solve_periodic_local_field_scalar(
 
         div[eps0 eps_r E + Pz e_z] = 0.
 
-    Unlike the older depolarization-only helper, this function includes the
-    dielectric correction driven by a spatially varying eps_r under the applied
-    macroscopic field.
+    Numerically, the equation is divided by eps0 before the CG solve,
+
+        div[eps_r E + (Pz/eps0) e_z] = 0.
+
+    This dimensionless scaling keeps the operator coefficients O(1-100) rather
+    than O(1e-11) and gives the same conditioning as the independently tested
+    static dielectric-cell solver. Physical D is reconstructed after solving.
     """
     eps_rel = np.asarray(eps_r, dtype=float)
     Pz = np.asarray(Pz_explicit, dtype=float)
@@ -111,34 +119,36 @@ def solve_periodic_local_field_scalar(
     if eps0 <= 0.0 or tol <= 0.0 or maxiter <= 0:
         raise ValueError("eps0, tol and maxiter must be positive")
 
-    eps_abs = float(eps0) * eps_rel
+    # Divide Gauss' law by eps0. This is algebraically exact and substantially
+    # improves numerical conditioning for high-contrast laminate cell problems.
+    Pz_scaled = Pz / float(eps0)
     macro_div = _divergence_of_uniform_macro_flux(
-        eps_abs,
+        eps_rel,
         E_external_z=float(E_external_z),
         dz=grid.dz,
     )
-    p_div = _divergence_of_cell_pz(Pz, dz=grid.dz)
+    p_div = _divergence_of_cell_pz(Pz_scaled, dz=grid.dz)
     rhs = -macro_div - p_div
     rhs -= rhs.mean()
 
     shape = grid.shape
     n = Pz.size
-    gauge = max(float(np.mean(eps_abs)), float(eps0)) * 1e-12
+    gauge = max(float(np.mean(eps_rel)), 1.0) * 1e-12
 
     def matvec(x: np.ndarray) -> np.ndarray:
         psi = x.reshape(shape)
-        y = _neg_div_eps_grad(psi, eps_abs, grid.dz, grid.dx)
+        y = _neg_div_eps_grad(psi, eps_rel, grid.dz, grid.dx)
         return (y + gauge * psi.mean()).ravel()
 
     operator = LinearOperator((n, n), matvec=matvec, dtype=float)
 
-    eps_zp = _harmonic_face(eps_abs, np.roll(eps_abs, -1, axis=0))
-    eps_zm = _harmonic_face(eps_abs, np.roll(eps_abs, 1, axis=0))
-    eps_xp = _harmonic_face(eps_abs, np.roll(eps_abs, -1, axis=1))
-    eps_xm = _harmonic_face(eps_abs, np.roll(eps_abs, 1, axis=1))
+    eps_zp_rel = _harmonic_face(eps_rel, np.roll(eps_rel, -1, axis=0))
+    eps_zm_rel = _harmonic_face(eps_rel, np.roll(eps_rel, 1, axis=0))
+    eps_xp_rel = _harmonic_face(eps_rel, np.roll(eps_rel, -1, axis=1))
+    eps_xm_rel = _harmonic_face(eps_rel, np.roll(eps_rel, 1, axis=1))
     diag = (
-        (eps_zp + eps_zm) / (grid.dz * grid.dz)
-        + (eps_xp + eps_xm) / (grid.dx * grid.dx)
+        (eps_zp_rel + eps_zm_rel) / (grid.dz * grid.dz)
+        + (eps_xp_rel + eps_xm_rel) / (grid.dx * grid.dx)
         + gauge / n
     )
     if np.any(~np.isfinite(diag)) or np.any(diag <= 0.0):
@@ -174,8 +184,13 @@ def solve_periodic_local_field_scalar(
     grad_z_face = (np.roll(psi, -1, axis=0) - psi) / grid.dz
     grad_x_face = (np.roll(psi, -1, axis=1) - psi) / grid.dx
     P_z_face = 0.5 * (Pz + np.roll(Pz, -1, axis=0))
-    D_z_face = eps_zp * (float(E_external_z) - grad_z_face) + P_z_face
-    D_x_face = eps_xp * (-grad_x_face)
+    D_z_face = (
+        float(eps0)
+        * eps_zp_rel
+        * (float(E_external_z) - grad_z_face)
+        + P_z_face
+    )
+    D_x_face = float(eps0) * eps_xp_rel * (-grad_x_face)
 
     div_D = (
         (D_z_face - np.roll(D_z_face, 1, axis=0)) / grid.dz
