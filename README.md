@@ -6,50 +6,65 @@ Phase-field development repository for semicrystalline PVDF/BOPVDF with an event
 
 ## Active branch: literature-reproduction
 
-The current mainline is no longer “add another project-defined morphology scan”. It is **source-first reproduction of published ferroelectric-polymer phase-field models**.
+The current mainline is **source-first reproduction of published ferroelectric-polymer continuum models**. The previous v0.1.16-v0.1.19 frozen-source / waviness / RMS-orientation / harmonic-spectrum studies remain in history as numerical sensitivity experiments; they are not treated as reproduced material physics.
 
-The previous v0.1.16-v0.1.19 frozen-source / waviness / RMS-orientation / harmonic-spectrum studies remain in repository history as numerical sensitivity experiments. They are not considered reproduced PVDF phase-field physics and are not extended on this branch.
+### Current literature anchors
 
-### Reproduction hierarchy
+1. **Guo et al., Nature Communications 15, 348 (2024)** — vector TDGL / polar-spiral phase-field benchmark. The one-axis Landau slice is reproduced exactly from S2/S3; the homogeneous strong/weak angular-anisotropy contrast in Fig. S16 is now reconstructed using source coefficients and a published cross-check of the contracted sixth-order convention.
+2. **Ahluwalia et al., Physical Review B 78, 054110 (2008)** — now the primary multiscale-method anchor because the full article explicitly maps MD thermodynamics, domain walls, fluctuations, relaxation time and cell volume into LGD/TDGL quantities.
+3. **Su et al., Nature Communications 13, 4867 (2022)** — beta-PVDF benchmark and explicit published reference for the conventional sixth-order Landau expansion and uniaxial PVDF bulk energy.
+4. **Huang/Rui crystal-OAF-IAF evidence** enters only after the published polymer baselines identify which continuum coefficients can legitimately be replaced.
+5. **DFT/MD/MLP** is then used to generate the atomistic observables needed to calibrate those coefficients, rather than supplying arbitrary phenomenological numbers.
 
-1. **Guo et al., Nature Communications 15, 348 (2024)** — first executable benchmark because the open paper/SI gives the vector TDGL framework and strong/weak-anisotropy coefficient tables.
-2. **Su et al., Nature Communications 13, 4867 (2022)** — second benchmark because the paper prints an explicit uniaxial beta-PVDF Landau form and electrostatic equation.
-3. **Ahluwalia et al., Phys. Rev. B 78, 054110 (2008)** — multiscale-method anchor because MD data are used to parameterize a P(VDF-TrFE) LGD/TDGL model; exact reproduction waits for the full article/author manuscript rather than reconstructing coefficients from secondary sources.
-4. Only after a published polymer phase-field baseline closes do Huang/Rui crystal-OAF-IAF data replace identified continuum inputs.
-5. DFT/MD/MLP calculations are then used to generate or validate the specific continuum coefficients that remain unresolved.
+Detailed evidence boundaries: `docs/model_notes/LITERATURE_REPRODUCTION_BASELINE.md`.
 
-The detailed selection and evidence boundaries are in `docs/model_notes/LITERATURE_REPRODUCTION_BASELINE.md`.
+## Current executable checkpoints
 
-## Current executable checkpoint
-
-**Guo 2024 Stage 1: source-faithful one-axis Landau benchmark.**
-
-The source reports a vector sixth-order Landau model. Before expanding the full vector polynomial, the repository implements only the unambiguous one-axis slice
-
-```text
-f(P,T) = alpha1(T) P^2 + alpha11 P^4 + alpha111 P^6
-```
-
-using the coefficients directly transcribed from Supplementary Tables S2/S3. Cross terms vanish on this axis, so no unreported multiplicity convention is introduced.
-
-At 25 C, the code derives the stationary minima directly from those source coefficients and records them as reproduction-derived regression anchors. These derived values are not represented as measurements or as values quoted by Guo et al.
-
-Implementation:
+### Guo 2024
 
 ```text
 src/pvdf_pf/literature/guo2024.py
+src/pvdf_pf/literature/guo2024_vector.py
 scripts/reproduce_guo2024_landau_axis.py
+scripts/reproduce_guo2024_s16_landau.py
 tests/test_guo2024_landau_axis.py
+tests/test_guo2024_vector_landau.py
 docs/model_notes/GUO2024_REPRODUCTION.md
 ```
 
-A separate `literature-reproduction` GitHub Actions workflow runs only this source-faithful benchmark and stores its JSON report as an artifact. The original exploratory branch CI is not used as evidence that this reproduction is physically correct.
+The branch distinguishes two claim levels:
 
-## Gate for the next stage
+- one-axis polynomial: exact direct transcription of the source-supported slice;
+- full homogeneous S16 angular anisotropy: `SOURCE_CONSTRAINED_QUALITATIVE_S16_ANISOTROPY_REPRODUCTION`, not a pixel-exact reconstruction, because Guo does not report the plotting normalization used for the 3D energy surface.
 
-The next code change is **not** another morphology parameter scan. Before implementing Guo's full vector Landau surface, the exact expansion convention associated with `alpha11`, `alpha12`, `alpha111`, `alpha112`, and `alpha123` must be verified from the primary source/reference chain or source data. Only then will the short-circuit vector TDGL problem and the polar-spiral target be implemented.
+The Guo peer-review record is also treated as part of the model provenance: the authors restrict the elastic treatment to the low-field linear regime and describe the phase-field rotational mechanism as semi-quantitative. This limitation is inherited here.
 
-No `PROJECT_IMAGE_DERIVED_CONSTRAINT`, sinusoidal waviness spectrum, frozen beta/OAF polarization allocation, or project-defined OAF decay profile is allowed inside a literature-reproduction benchmark.
+### Ahluwalia 2008
+
+```text
+src/pvdf_pf/literature/ahluwalia2008.py
+scripts/reproduce_ahluwalia2008_multiscale.py
+tests/test_ahluwalia2008_multiscale.py
+docs/model_notes/AHLUWALIA2008_MULTISCALE_REPRODUCTION.md
+```
+
+The code preserves directly printed source values separately from quantities re-derived from rounded tables. In particular, re-applying Eqs. (2)-(3) to the rounded Table-I MD numbers does not regenerate Table II exactly; printed Table II therefore remains authoritative.
+
+The future MLP bridge follows the paper's observable-based logic:
+
+```text
+DFT / MLP atomistic data
+-> P(T), phase-energy differences, wall profiles/energies,
+   elastic/dielectric response, fluctuations, relaxation times
+-> calibrated LGD / gradient / electrostrictive / kinetic coefficients
+-> phase-field predictions
+```
+
+## Next numerical stage
+
+The next full solver milestone is **Guo 2024 vector TDGL under the published short-circuit boundary condition**, first with Landau + gradient + electrostatics, then with the source elastic/electrostrictive model under its stated low-field limitation. The target is the qualitative weak-anisotropy spiral texture of main Fig. 3e / Supplementary Fig. S16d before attempting field/stress-driven rotation in S17-S19.
+
+No project-defined morphology spectrum, frozen beta/OAF source allocation, OAF decay profile or image-derived morphology constraint is permitted inside the literature-reproduction benchmark.
 
 ## Branches
 
