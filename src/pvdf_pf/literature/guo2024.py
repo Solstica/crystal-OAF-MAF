@@ -7,14 +7,14 @@ spirals in a relaxor ferroelectric polymer", Nature Communications 15, 348
 (2024), DOI 10.1038/s41467-023-44395-5.
 
 Supplementary Tables S2 and S3 report strong- and weak-anisotropy Landau
-coefficients.  The complete paper uses a vector sixth-order Landau polynomial,
+coefficients. The complete paper uses a vector sixth-order Landau polynomial,
 but the expanded cross-term convention is not printed in a form we can safely
-reconstruct from the table alone.  This module therefore starts with a strict
+reconstruct from the table alone. This module therefore starts with a strict
 one-axis slice
 
     f(P) = alpha1 P^2 + alpha11 P^4 + alpha111 P^6,
 
-for which every cross term vanishes.  No unreported coefficient is introduced.
+for which every cross term vanishes. No unreported coefficient is introduced.
 """
 from __future__ import annotations
 
@@ -106,7 +106,7 @@ def axis_equilibrium(
     """Derive the stable non-zero one-axis minimum when it exists.
 
     This is a repository-derived consequence of the source coefficients, not a
-    value quoted by Guo et al.  For P != 0, stationarity gives
+    value quoted by Guo et al. For P != 0, stationarity gives
 
         3 alpha111 y^2 + 2 alpha11 y + alpha1 = 0,  y = P^2.
 
@@ -120,13 +120,13 @@ def axis_equilibrium(
         raise ValueError("Landau coefficients must be finite and alpha111 positive")
 
     discriminant = (2.0 * a11) ** 2 - 12.0 * a111 * a1
-    candidates: list[tuple[float, float, float]] = [
-        (0.0, 0.0, 2.0 * a1)
-    ]
+    candidates: list[tuple[float, float, float]] = [(0.0, 0.0, 2.0 * a1)]
     if discriminant >= 0.0:
         root_disc = math.sqrt(discriminant)
-        for y in ((-2.0 * a11 + root_disc) / (6.0 * a111),
-                  (-2.0 * a11 - root_disc) / (6.0 * a111)):
+        for y in (
+            (-2.0 * a11 + root_disc) / (6.0 * a111),
+            (-2.0 * a11 - root_disc) / (6.0 * a111),
+        ):
             if y <= 0.0:
                 continue
             p = math.sqrt(y)
@@ -143,5 +143,6 @@ def axis_equilibrium(
         "alpha1_J_m_C2": float(a1),
         "P_abs_min_C_m2": float(p_abs),
         "f_min_J_m3": float(f_min),
-        "curvature_at_min_J_m5_C2": float(curvature),
+        # d^2 f / dP^2 has the same units as alpha1: J m C^-2.
+        "curvature_at_min_J_m_C2": float(curvature),
     }
