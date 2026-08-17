@@ -45,6 +45,16 @@ class GeneralizedDebyeBank:
     def delta_epsilon_total(self) -> float:
         return float(sum(self.delta_epsilon_modes))
 
+    @property
+    def epsilon_static(self) -> float:
+        """Static relative permittivity represented by the complete Debye bank."""
+        return float(self.epsilon_infinity + self.delta_epsilon_total)
+
+    @property
+    def epsilon_static_amorphous(self) -> float:
+        """Contextual alias used by the BOPVDF combined-amorphous calibration."""
+        return self.epsilon_static
+
 
 def continuous_generalized_susceptibility(
     bank: GeneralizedDebyeBank,
