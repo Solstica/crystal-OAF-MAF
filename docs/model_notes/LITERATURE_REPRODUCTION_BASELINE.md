@@ -11,7 +11,8 @@ The development rule is:
 1. reproduce published PVDF/P(VDF-TrFE) continuum models using the papers' own equations, coefficients, boundary conditions and target observables;
 2. distinguish directly printed quantities from values re-derived from rounded tables or reconstructed from a published convention;
 3. preserve every source approximation as an approximation rather than silently upgrading it to a material constant;
-4. only after a baseline closes, replace or augment an identified continuum input with Huang/Rui crystal-OAF-IAF evidence or atomistic/MLP output.
+4. treat missing numerical source information as a reproduction gate, not as permission to add plausible defaults;
+5. only after a baseline closes, replace or augment an identified continuum input with Huang/Rui crystal-OAF-IAF evidence or atomistic/MLP output.
 
 ## Anchor A — Guo et al., Nature Communications 15, 348 (2024)
 
@@ -30,9 +31,11 @@ The SI gives strong- and weak-anisotropy coefficient sets and Supplementary Fig.
 - Stage 2a: homogeneous three-component angular anisotropy — closed at a **source-constrained qualitative** level.
 - The expanded sixth-order convention is not printed by Guo, so the repository cross-checks it against the explicit conventional polynomial printed by Su et al. 2022 rather than inventing multiplicities.
 - Pixel-exact Fig. S16 surface rendering is not claimed because its graphical normalization is not reported.
-- Vector TDGL/gradient/electrostatic and elastic spiral reproduction remain open.
+- Exact full TDGL spiral reproduction is currently gated by numerical inputs that are defined in the equations but not assigned source values in the available article/SI: notably `kappa_ij`, `L`, FEM mesh/order/convergence details and a complete initialization protocol. Exact mechanical runs additionally require more complete mechanical boundary-condition detail.
 
-Status: `EXECUTABLE_PRIMARY_PHASE_FIELD_BENCHMARK`.
+Status: `EXECUTABLE_HOMOGENEOUS_BENCHMARK__FULL_PDE_SOURCE_GATED`.
+
+The missing-input audit is recorded in `docs/model_notes/GUO2024_REPRODUCIBILITY_GAPS.md`. A Guo PDE implementation may expose these quantities as explicit unresolved configuration slots or use them in clearly labelled sensitivity studies, but values filled by this project cannot be presented as exact source reproduction.
 
 ### Important source limitation
 
@@ -55,7 +58,7 @@ MD equilibration time -> physical TDGL time scale
 MD cell volume -> continuum grid scale
 ```
 
-The printed Table-I MD observables and Table-II LGD coefficients are now encoded separately. Re-applying the paper's Eqs. (2)-(3) to the rounded Table-I numbers gives percent-level differences from printed Table II, demonstrating that Table II must remain authoritative for exact source reproduction.
+The printed Table-I MD observables and Table-II LGD coefficients are encoded separately. Re-applying the paper's Eqs. (2)-(3) to the rounded Table-I numbers gives percent-level differences from printed Table II, demonstrating that Table II must remain authoritative for exact source reproduction.
 
 The paper directly reports `K1=K2=2.108e-8 J m^3 C^-2` from MD-estimated ~0.4 nm domain-wall widths. It explicitly states that `K3` could not be atomistically obtained from unstable head-to-head/tail-to-tail walls and was set equal to `K1=K2` for computational convenience. That distinction is preserved in code.
 
@@ -85,7 +88,15 @@ with spontaneous polarization along the electrospinning/poling `z` direction. It
 div(eps0 eps_b E + P) = 0.
 ```
 
-The simulation is 512 x 512 x 512 nm^3 on 128^3 nodes (`4 nm` spacing), with periodic field boundary conditions and an applied field of `1.2e5 V/m`. The supplementary file directly supplies the PVDF coefficients.
+The simulation is 512 x 512 x 512 nm^3 on 128^3 nodes (`4 nm` spacing), with periodic field boundary conditions and an applied field of `1.2e5 V/m`. The supplementary file directly supplies the PVDF Landau, electrostrictive and elastic-compliance coefficients.
+
+### Current executable status
+
+The direct Table-3 PVDF coefficients and Eq. (4) are now encoded in `src/pvdf_pf/literature/su2022.py`, with an explicit `eps_b` argument for Eq. (5). The 300/315/330 K stationary-state calculations in the report are declared algebraic regression checkpoints, not paper-reported simulation results.
+
+The provided article/SI does not tabulate a PVDF gradient coefficient or kinetic coefficient even though the full phase-field formulation contains gradient and TDGL terms. Therefore the exact homogeneous PVDF algebra is source-complete, whereas independent full-domain-map reproduction is not.
+
+Status: `EXECUTABLE_HOMOGENEOUS_PVDF_BENCHMARK__FULL_DOMAIN_SOURCE_GATED`.
 
 ### Why it matters
 
@@ -94,23 +105,22 @@ Su 2022 serves two roles:
 1. a clean beta-PVDF uniaxial benchmark;
 2. an explicit published check of the contracted sixth-order Landau polynomial convention used to expand the Guo S3 coefficient set.
 
-Status: `SECONDARY_EXECUTABLE_BENCHMARK`.
-
 ## Revised reproduction order
 
-Now that the full Ahluwalia paper is available, the sequence is no longer limited by missing source text:
+The source audit changes the order from “force every paper into a full PDE reproduction” to “close everything that is actually source-complete, then use the most complete source to validate the solver”:
 
 ```text
-Guo 2024 homogeneous Landau/S16 anisotropy
--> Ahluwalia 2008 MD-to-LGD/gradient/noise/time transfer audit
--> Su 2022 beta-PVDF uniaxial benchmark
--> Guo 2024 vector TDGL + weak-anisotropy spiral benchmark
+Guo 2024 homogeneous Landau/S16 anisotropy                CLOSED
+-> Ahluwalia 2008 MD-to-LGD/gradient/noise/time audit    CLOSED
+-> Su 2022 beta-PVDF homogeneous Eq.(4)/Table-3 audit    CLOSED
+-> Ahluwalia 2008 homogeneous P(T), intrinsic P-E and stochastic TDGL solver validation
+-> source-gated Guo/Su full-domain modules with unresolved inputs kept explicit
 -> Huang/Rui crystal-OAF-IAF substitution at identified coefficients
 -> project DFT/MD/MLP generation of unresolved atomistic observables
 -> re-fit continuum coefficients and validate against experiments
 ```
 
-The reason for doing the Ahluwalia transfer audit before the full Guo spiral solver is scientific: it fixes the project architecture for cross-scale parameterization, so later code does not accidentally treat phenomenological coefficients as arbitrary fitting knobs.
+The next numerically complete solver target is therefore **Ahluwalia 2008**, not an artificially completed Guo spiral calculation. Guo remains the central topological-physics target, but the exact-source gate is kept closed until missing numerical inputs or author code become available.
 
 ## What the eventual MLP bridge is allowed to do
 
