@@ -60,9 +60,11 @@ jobs:
         run: python scripts/run_v0118_orientation_constrained_scan.py
       - name: v0.1.19 same-RMS orientation-spectrum sensitivity
         run: python scripts/run_v0119_same_rms_spectrum.py
-      - name: Upload v0.1.19 report
+      - name: Upload v0.1.18-v0.1.19 reports
         uses: actions/upload-artifact@v4
         with:
-          name: v0119-same-rms-spectrum-report
-          path: outputs/v0119_same_rms_spectrum/report.json
+          name: v0118-v0119-orientation-reports
+          path: |
+            outputs/v0118_orientation_constrained_scan/report.json
+            outputs/v0119_same_rms_spectrum/report.json
           if-no-files-found: error
