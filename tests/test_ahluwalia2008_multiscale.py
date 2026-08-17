@@ -6,8 +6,13 @@ from pvdf_pf.literature.ahluwalia2008 import (
     TABLE_I_PRINTED,
     TABLE_II_PRINTED,
     derive_lgd_from_table_i,
+    ferroelectric_stationary_magnitude,
+    homogeneous_equation_of_state,
+    homogeneous_landau_density,
+    intrinsic_coercive_spinodal,
     kinetic_ratios,
     table_ii_rounding_audit,
+    transition_implied_by_printed_table_ii,
 )
 
 
@@ -53,3 +58,52 @@ def test_noise_matching_recovers_source_kinetic_ratios_and_time_mapping():
 
     assert KINETIC_CHECKPOINT.reported_smallest_tdgl_time_ps == 9.0
     assert KINETIC_CHECKPOINT.tdgl_grid_length_nm == 2.16
+
+
+def test_printed_table_ii_reproduces_table_i_equilibrium_points_with_rounding_error_only():
+    p0 = ferroelectric_stationary_magnitude(0.0)
+    pc = ferroelectric_stationary_magnitude(450.0)
+    assert p0 is not None and pc is not None
+    assert np.isclose(p0["P_C_m2"], 0.11145018833701702, rtol=1e-12)
+    assert np.isclose(pc["P_C_m2"], 0.08816395152865937, rtol=1e-12)
+    assert abs(p0["P_C_m2"] - TABLE_I_PRINTED.P0_C_m2) < 5e-4
+    assert abs(pc["P_C_m2"] - TABLE_I_PRINTED.Pc_C_m2) < 2e-4
+
+
+def test_first_order_transition_implied_by_rounded_table_ii_is_near_printed_tc_pc():
+    coexistence = transition_implied_by_printed_table_ii()
+    assert np.isclose(coexistence["Tc_K"], 450.1332774015701, rtol=1e-12)
+    assert np.isclose(coexistence["Pc_C_m2"], 0.08814913652594829, rtol=1e-12)
+    assert abs(coexistence["Tc_K"] - TABLE_I_PRINTED.Tc_K) < 0.14
+    assert abs(coexistence["Pc_C_m2"] - TABLE_I_PRINTED.Pc_C_m2) < 2e-4
+    assert abs(coexistence["f_at_Pc_J_m3"]) < 1e-6
+
+
+def test_equation_of_state_is_derivative_of_source_free_energy():
+    p = 0.065
+    t = 300.0
+    h = 1e-7
+    finite_difference = (
+        homogeneous_landau_density(p + h, t)
+        - homogeneous_landau_density(p - h, t)
+    ) / (2.0 * h)
+    assert np.isclose(
+        homogeneous_equation_of_state(p, t),
+        finite_difference,
+        rtol=2e-9,
+    )
+
+
+def test_300K_intrinsic_spinodal_regression_for_fig3_scale():
+    equilibrium = ferroelectric_stationary_magnitude(300.0)
+    assert equilibrium is not None
+    assert np.isclose(equilibrium["P_C_m2"], 0.09932864465590406, rtol=1e-12)
+
+    spinodal = intrinsic_coercive_spinodal(300.0)
+    assert np.isclose(spinodal["P_spinodal_C_m2"], 0.07781500237567947, rtol=1e-12)
+    assert np.isclose(
+        spinodal["E_switch_from_positive_V_m"],
+        -1.4644287383151217e9,
+        rtol=1e-12,
+    )
+    assert np.isclose(spinodal["Ec_magnitude_V_m"], 1.4644287383151217e9, rtol=1e-12)
