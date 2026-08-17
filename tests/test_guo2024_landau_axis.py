@@ -37,7 +37,7 @@ def test_strong_anisotropy_axis_minimum_regression():
             result["P_abs_min_C_m2"], 25.0, GUO2024_STRONG_ANISOTROPY_AXIS
         )
     ) < 1e-7
-    assert result["curvature_at_min_J_m5_C2"] > 0.0
+    assert result["curvature_at_min_J_m_C2"] > 0.0
 
 
 def test_weak_anisotropy_axis_minimum_regression():
@@ -49,7 +49,7 @@ def test_weak_anisotropy_axis_minimum_regression():
             result["P_abs_min_C_m2"], 25.0, GUO2024_WEAK_ANISOTROPY_AXIS
         )
     ) < 1e-7
-    assert result["curvature_at_min_J_m5_C2"] > 0.0
+    assert result["curvature_at_min_J_m_C2"] > 0.0
 
 
 def test_no_cross_coefficient_is_needed_for_axis_slice():
