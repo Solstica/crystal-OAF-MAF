@@ -151,3 +151,128 @@ def kinetic_ratios() -> dict[str, float]:
         "n_Gamma_y_over_Gamma_z": float(n),
         "ps_per_tstar_from_equilibration_match": float(tstar_to_ps),
     }
+
+
+def quadratic_coefficient(
+    temperature_K: float,
+    parameters: AhluwaliaLGDParameters = TABLE_II_PRINTED,
+) -> float:
+    """Return alpha0*(T-T0) in the source Eq. (1)."""
+    temperature_K = float(temperature_K)
+    if not math.isfinite(temperature_K):
+        raise ValueError("temperature_K must be finite")
+    return parameters.alpha0_J_m_C2_K * (temperature_K - parameters.T0_K)
+
+
+def homogeneous_landau_density(
+    polarization_C_m2: float,
+    temperature_K: float,
+    parameters: AhluwaliaLGDParameters = TABLE_II_PRINTED,
+) -> float:
+    """Evaluate source Eq. (1), f(P,T), in J m^-3."""
+    p = float(polarization_C_m2)
+    if not math.isfinite(p):
+        raise ValueError("polarization_C_m2 must be finite")
+    a = quadratic_coefficient(temperature_K, parameters)
+    return float(
+        0.5 * a * p**2
+        - 0.25 * parameters.beta_J_m5_C4 * p**4
+        + (1.0 / 6.0) * parameters.gamma_J_m9_C6 * p**6
+    )
+
+
+def homogeneous_equation_of_state(
+    polarization_C_m2: float,
+    temperature_K: float,
+    parameters: AhluwaliaLGDParameters = TABLE_II_PRINTED,
+) -> float:
+    """Return E=d f/dP for homogeneous switching, in V m^-1."""
+    p = float(polarization_C_m2)
+    a = quadratic_coefficient(temperature_K, parameters)
+    return float(
+        a * p
+        - parameters.beta_J_m5_C4 * p**3
+        + parameters.gamma_J_m9_C6 * p**5
+    )
+
+
+def ferroelectric_stationary_magnitude(
+    temperature_K: float,
+    parameters: AhluwaliaLGDParameters = TABLE_II_PRINTED,
+) -> dict[str, float] | None:
+    """Positive nonzero stationary branch used for the source P(T) curve.
+
+    This implements the positive-root analytical branch following Eq. (1). Above
+    its spinodal the nonzero branch does not exist and ``None`` is returned.
+    """
+    a = quadratic_coefficient(temperature_K, parameters)
+    beta = parameters.beta_J_m5_C4
+    gamma = parameters.gamma_J_m9_C6
+    disc = beta**2 - 4.0 * gamma * a
+    if disc < 0.0:
+        return None
+    p2 = (beta + math.sqrt(disc)) / (2.0 * gamma)
+    if p2 <= 0.0:
+        return None
+    p = math.sqrt(p2)
+    curvature = a - 3.0 * beta * p2 + 5.0 * gamma * p2**2
+    return {
+        "temperature_K": float(temperature_K),
+        "P_C_m2": float(p),
+        "f_J_m3": homogeneous_landau_density(p, temperature_K, parameters),
+        "curvature_J_m_C2": float(curvature),
+    }
+
+
+def transition_implied_by_printed_table_ii(
+    parameters: AhluwaliaLGDParameters = TABLE_II_PRINTED,
+) -> dict[str, float]:
+    """First-order coexistence point implied by the rounded printed Table II.
+
+    For f=a P^2/2-beta P^4/4+gamma P^6/6, coexistence with P=0 occurs at
+    P_c^2=3 beta/(4 gamma) and a_c=3 beta^2/(16 gamma).
+    """
+    beta = parameters.beta_J_m5_C4
+    gamma = parameters.gamma_J_m9_C6
+    p_c = math.sqrt(3.0 * beta / (4.0 * gamma))
+    a_c = 3.0 * beta**2 / (16.0 * gamma)
+    t_c = parameters.T0_K + a_c / parameters.alpha0_J_m_C2_K
+    return {
+        "Tc_K": float(t_c),
+        "Pc_C_m2": float(p_c),
+        "f_at_Pc_J_m3": homogeneous_landau_density(p_c, t_c, parameters),
+    }
+
+
+def intrinsic_coercive_spinodal(
+    temperature_K: float,
+    parameters: AhluwaliaLGDParameters = TABLE_II_PRINTED,
+) -> dict[str, float]:
+    """Homogeneous positive-branch spinodal underlying the intrinsic P-E loop.
+
+    The field-controlled equation of state is E(P)=df/dP. Loss of stability of
+    the positive ferroelectric branch satisfies dE/dP=0. The returned signed
+    switching field is negative for switching from +P toward -P.
+    """
+    a = quadratic_coefficient(temperature_K, parameters)
+    beta = parameters.beta_J_m5_C4
+    gamma = parameters.gamma_J_m9_C6
+    disc = (3.0 * beta) ** 2 - 20.0 * gamma * a
+    if disc < 0.0:
+        raise ValueError("no real homogeneous spinodal at this temperature")
+    roots = [
+        (3.0 * beta - math.sqrt(disc)) / (10.0 * gamma),
+        (3.0 * beta + math.sqrt(disc)) / (10.0 * gamma),
+    ]
+    positive = [q for q in roots if q > 0.0]
+    if not positive:
+        raise ValueError("no positive ferroelectric spinodal at this temperature")
+    p2 = max(positive)
+    p = math.sqrt(p2)
+    field = homogeneous_equation_of_state(p, temperature_K, parameters)
+    return {
+        "temperature_K": float(temperature_K),
+        "P_spinodal_C_m2": float(p),
+        "E_switch_from_positive_V_m": float(field),
+        "Ec_magnitude_V_m": float(abs(field)),
+    }
