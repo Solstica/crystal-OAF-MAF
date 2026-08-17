@@ -9,11 +9,13 @@ on:
       - "src/pvdf_pf/literature/**"
       - "scripts/reproduce_*.py"
       - "tests/test_guo2024_*.py"
+      - "tests/test_ahluwalia2008_*.py"
       - "docs/model_notes/*REPRODUCTION*.md"
+      - "docs/model_notes/AHLUWALIA2008_*.md"
       - ".github/workflows/literature_reproduction.yml"
 
 jobs:
-  guo2024-stage1:
+  source-reproduction:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,12 +25,23 @@ jobs:
       - name: Install
         run: python -m pip install -e ".[dev]"
       - name: Source-faithful unit tests
-        run: pytest -q tests/test_guo2024_landau_axis.py
+        run: >-
+          pytest -q
+          tests/test_guo2024_landau_axis.py
+          tests/test_guo2024_vector_landau.py
+          tests/test_ahluwalia2008_multiscale.py
       - name: Guo 2024 Landau-axis reproduction
         run: python scripts/reproduce_guo2024_landau_axis.py
-      - name: Upload reproduction report
+      - name: Guo 2024 S16 homogeneous anisotropy checkpoint
+        run: python scripts/reproduce_guo2024_s16_landau.py
+      - name: Ahluwalia 2008 multiscale transfer audit
+        run: python scripts/reproduce_ahluwalia2008_multiscale.py
+      - name: Upload reproduction checkpoints
         uses: actions/upload-artifact@v4
         with:
-          name: guo2024-landau-axis-stage1
-          path: outputs/literature_reproduction/guo2024_landau_axis/report.json
+          name: literature-reproduction-checkpoints
+          path: |
+            outputs/literature_reproduction/guo2024_landau_axis/report.json
+            outputs/literature_reproduction/guo2024_s16_landau/report.json
+            outputs/literature_reproduction/ahluwalia2008_multiscale/report.json
           if-no-files-found: error
