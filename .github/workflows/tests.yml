@@ -58,3 +58,5 @@ jobs:
         run: python scripts/run_v0117_lamellar_waviness.py
       - name: v0.1.18 Huang-SAXS orientation-constrained scan
         run: python scripts/run_v0118_orientation_constrained_scan.py
+      - name: v0.1.19 same-RMS orientation-spectrum sensitivity
+        run: python scripts/run_v0119_same_rms_spectrum.py
