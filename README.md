@@ -1,67 +1,77 @@
 # crystal-OAF-MAF
 
-Phase-field development repository for semicrystalline PVDF with explicit **crystal / OAF / IAF** structural regions and separate mobility-based RAF/MAF bookkeeping where the cited source requires it.
+Phase-field development repository for semicrystalline PVDF/BOPVDF with an eventual **crystal / OAF / IAF** description and a DFT/MD/MLP -> continuum parameter bridge.
 
-> Historical scripts may still use `MAF` as a phase identifier. For the Huang/Rui three-region structural model, the physical region is named **IAF (isotropic amorphous fraction)**. RAF/MAF are mobility-defined fractions and are not synonyms for OAF/IAF.
+> Historical scripts may still use `MAF` as a phase identifier. In the Huang/Rui structural description the physical non-oriented amorphous region is treated here as IAF; RAF/MAF remain mobility-defined bookkeeping quantities and are not synonyms for OAF/IAF.
 
-## Physical scope
+## Active branch: literature-reproduction
 
-The executable development is deliberately stage-separated:
+The current mainline is no longer “add another project-defined morphology scan”. It is **source-first reproduction of published ferroelectric-polymer phase-field models**.
 
-- fixed crystal / oriented amorphous fraction (OAF) / isotropic amorphous fraction (IAF) morphology;
-- scalar polarization along the film-normal direction for the present electrostatic audits;
-- phase-dependent electrostatics with spatially varying background permittivity `eps_b(r)`;
-- experimentally constrained broadband amorphous relaxation represented by a positive generalized-Debye/Prony bank;
-- prescribed frozen ferroelectric polarization as a separate source term before TDGL switching kinetics are activated;
-- HHTT and free-volume fields reserved as explicit inputs, with couplings kept zero until calibrated from literature, experiment, MD, DFT or MLP.
+The previous v0.1.16-v0.1.19 frozen-source / waviness / RMS-orientation / harmonic-spectrum studies remain in repository history as numerical sensitivity experiments. They are not considered reproduced PVDF phase-field physics and are not extended on this branch.
 
-The earlier inorganic relaxor code is treated only as a numerical reference. Its A/B-sublattice chemistry, PTO/STO/La endmembers, Vegard mapping and compensation-defect physics are not transferred into the PVDF model.
+### Reproduction hierarchy
 
-## Current executable stage
+1. **Guo et al., Nature Communications 15, 348 (2024)** — first executable benchmark because the open paper/SI gives the vector TDGL framework and strong/weak-anisotropy coefficient tables.
+2. **Su et al., Nature Communications 13, 4867 (2022)** — second benchmark because the paper prints an explicit uniaxial beta-PVDF Landau form and electrostatic equation.
+3. **Ahluwalia et al., Phys. Rev. B 78, 054110 (2008)** — multiscale-method anchor because MD data are used to parameterize a P(VDF-TrFE) LGD/TDGL model; exact reproduction waits for the full article/author manuscript rather than reconstructing coefficients from secondary sources.
+4. Only after a published polymer phase-field baseline closes do Huang/Rui crystal-OAF-IAF data replace identified continuum inputs.
+5. DFT/MD/MLP calculations are then used to generate or validate the specific continuum coefficients that remain unresolved.
 
-The active branch has reached **v0.1.19**.
+The detailed selection and evidence boundaries are in `docs/model_notes/LITERATURE_REPRODUCTION_BASELINE.md`.
 
-- v0.1.12-v0.1.14: same-state BOPVDF broadband BDS -> Cole-Cole fit -> non-negative generalized-Debye/Prony time-domain representation.
-- v0.1.15: self-consistent local-field coupling between the generalized-Debye polarization and heterogeneous Gauss electrostatics.
-- v0.1.16: prescribed beta/OAF frozen ferroelectric source added to Gauss' law while TDGL remains frozen; Huang 2021 SAXS layer thicknesses are transferred as geometric ratios.
-- v0.1.17: Huang-aligned lamellae are given controlled sinusoidal waviness to test how a local film-normal interface-normal component activates bound charge and redistributes the local field.
-- v0.1.18: the internal waviness amplitude is replaced as the reported scan variable by `sqrt(<n_ND^2>)`, the RMS film-normal projection of the local lamellar/interface normal. A rasterized Huang Supplementary Fig. 13a estimate is recorded only as a project-level orientation constraint; larger values remain explicit sensitivity bounds.
-- v0.1.19: several smooth periodic interface spectra are rescaled to the same `sqrt(<n_ND^2>)`. At fixed RMS orientation spread, the current `48 x 48` calculations show about 25-41% spread in field RMS and 36-55% spread in maximum field across spectra. These differences are not yet promoted to continuum morphology physics because interface pixelization and small voxel-fraction changes must be checked by grid refinement.
+## Current executable checkpoint
 
-No current v0.1.16-v0.1.19 frozen-polarization amplitude is a phase-resolved measured remanent polarization. Absolute field magnitudes from these versions are sensitivity outputs until beta/OAF remanent-polarization allocation is independently constrained. The v0.1.18 `sqrt(<n_ND^2>) = 0.05-0.20` range is also not a directly reported Huang measurement; its provenance is recorded as `PROJECT_IMAGE_DERIVED_CONSTRAINT`. The real-space spectra introduced in v0.1.19 are `PLACEHOLDER_GEOMETRY_ENSEMBLE`.
+**Guo 2024 Stage 1: source-faithful one-axis Landau benchmark.**
+
+The source reports a vector sixth-order Landau model. Before expanding the full vector polynomial, the repository implements only the unambiguous one-axis slice
+
+```text
+f(P,T) = alpha1(T) P^2 + alpha11 P^4 + alpha111 P^6
+```
+
+using the coefficients directly transcribed from Supplementary Tables S2/S3. Cross terms vanish on this axis, so no unreported multiplicity convention is introduced.
+
+At 25 C, the code derives the stationary minima directly from those source coefficients and records them as reproduction-derived regression anchors. These derived values are not represented as measurements or as values quoted by Guo et al.
+
+Implementation:
+
+```text
+src/pvdf_pf/literature/guo2024.py
+scripts/reproduce_guo2024_landau_axis.py
+tests/test_guo2024_landau_axis.py
+docs/model_notes/GUO2024_REPRODUCTION.md
+```
+
+A separate `literature-reproduction` GitHub Actions workflow runs only this source-faithful benchmark and stores its JSON report as an artifact. The original exploratory branch CI is not used as evidence that this reproduction is physically correct.
+
+## Gate for the next stage
+
+The next code change is **not** another morphology parameter scan. Before implementing Guo's full vector Landau surface, the exact expansion convention associated with `alpha11`, `alpha12`, `alpha111`, `alpha112`, and `alpha123` must be verified from the primary source/reference chain or source data. Only then will the short-circuit vector TDGL problem and the polar-spiral target be implemented.
+
+No `PROJECT_IMAGE_DERIVED_CONSTRAINT`, sinusoidal waviness spectrum, frozen beta/OAF polarization allocation, or project-defined OAF decay profile is allowed inside a literature-reproduction benchmark.
 
 ## Branches
 
 - `main`: reviewed milestones.
-- `dev-phasefield`: active three-phase phase-field development.
+- `dev-phasefield`: historical/experimental crystal-OAF-IAF development through v0.1.19.
+- `literature-reproduction`: active source-first reproduction and multiscale-method reconstruction.
 
 ## Repository layout
 
 ```text
 crystal-OAF-MAF/
-├─ docs/
-│  └─ model_notes/
-├─ src/
-│  └─ pvdf_pf/
-│     ├─ core/
-│     ├─ morphology/
-│     ├─ physics/
-│     └─ solver/
+├─ docs/model_notes/
+├─ src/pvdf_pf/
+│  ├─ literature/
+│  ├─ calibration/
+│  ├─ core/
+│  ├─ morphology/
+│  ├─ physics/
+│  └─ solver/
 ├─ configs/
 ├─ scripts/
 └─ tests/
 ```
 
-## Development sequence
-
-1. Verify crystal/OAF/IAF morphology and heterogeneous electrostatics numerically.
-2. Calibrate same-state broadband dielectric relaxation without mixing it with TDGL time.
-3. Add frozen ferroelectric sources and quantify orientation/morphology sensitivity.
-4. Check grid convergence of the v0.1.19 same-RMS spectrum dependence; retain higher-order morphology descriptors only if the spread survives refinement.
-5. Replace image-derived texture bounds with raw/tabulated azimuthal orientation data when available, and constrain phase-resolved remanent polarization independently.
-6. Introduce field-dependent beta/OAF switching only after the static-source audit is closed.
-7. Calibrate physical TDGL free-energy curvature, gradient coefficient and seconds-per-TDGL-time mapping.
-8. Add HHTT and free-volume couplings with source-specific phase allocation.
-9. Connect DFT / MD / MLP outputs to phase-field parameters.
-
-**A numerical value is physical only when its provenance status and source/state are recorded in `docs/model_notes/PARAMETER_PROVENANCE.md` or the corresponding versioned provenance addendum.**
+**Rule: a quantity may enter the reproduction model only if its primary-source definition, value/state, or explicit derivation path is recorded. Missing source information is a stop condition, not an invitation to invent a parameter.**
