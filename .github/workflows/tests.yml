@@ -50,3 +50,5 @@ jobs:
         run: python scripts/run_v0113_full_spectrum.py
       - name: v0.1.14 positive Prony time-domain bridge
         run: python scripts/run_v0114_prony_bridge.py
+      - name: v0.1.15 self-consistent local-field coupling
+        run: python scripts/run_v0115_local_field_coupling.py
