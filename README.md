@@ -1,20 +1,32 @@
 # crystal-OAF-MAF
 
-Phase-field development repository for semicrystalline PVDF with explicit **crystal / OAF / MAF** structure.
+Phase-field development repository for semicrystalline PVDF with explicit **crystal / OAF / IAF** structural regions and separate mobility-based RAF/MAF bookkeeping where the cited source requires it.
+
+> Historical scripts may still use `MAF` as a phase identifier. For the Huang/Rui three-region structural model, the physical region is named **IAF (isotropic amorphous fraction)**. RAF/MAF are mobility-defined fractions and are not synonyms for OAF/IAF.
 
 ## Physical scope
 
-The first executable model is intentionally narrow:
+The executable development is deliberately stage-separated:
 
-- fixed crystal / oriented amorphous fraction (OAF) / mobile amorphous fraction (MAF) morphology;
-- scalar polarization field `Pz(z, x)` for the first validation stage;
-- phase-dependent local Landau free energy;
-- gradient energy and TDGL relaxation;
-- electrostatics with spatially varying background permittivity `eps_b(r)`;
-- triangular external-field schedules for P-E scans;
-- HHTT and free-volume fields reserved as explicit inputs, with their couplings kept zero until calibrated from literature, experiment, MD or DFT.
+- fixed crystal / oriented amorphous fraction (OAF) / isotropic amorphous fraction (IAF) morphology;
+- scalar polarization along the film-normal direction for the present electrostatic audits;
+- phase-dependent electrostatics with spatially varying background permittivity `eps_b(r)`;
+- experimentally constrained broadband amorphous relaxation represented by a positive generalized-Debye/Prony bank;
+- prescribed frozen ferroelectric polarization as a separate source term before TDGL switching kinetics are activated;
+- HHTT and free-volume fields reserved as explicit inputs, with couplings kept zero until calibrated from literature, experiment, MD, DFT or MLP.
 
 The earlier inorganic relaxor code is treated only as a numerical reference. Its A/B-sublattice chemistry, PTO/STO/La endmembers, Vegard mapping and compensation-defect physics are not transferred into the PVDF model.
+
+## Current executable stage
+
+The active branch has reached **v0.1.17**.
+
+- v0.1.12-v0.1.14: same-state BOPVDF broadband BDS -> Cole-Cole fit -> non-negative generalized-Debye/Prony time-domain representation.
+- v0.1.15: self-consistent local-field coupling between the generalized-Debye polarization and heterogeneous Gauss electrostatics.
+- v0.1.16: prescribed beta/OAF frozen ferroelectric source added to Gauss' law while TDGL remains frozen; Huang 2021 SAXS layer thicknesses are transferred as geometric ratios.
+- v0.1.17: Huang-aligned lamellae are given controlled sinusoidal waviness to test how a local film-normal interface-normal component activates bound charge and redistributes the local field.
+
+No current v0.1.16-v0.1.17 frozen-polarization amplitude is a phase-resolved measured remanent polarization. Absolute field magnitudes from these versions are sensitivity outputs until beta/OAF remanent-polarization allocation is independently constrained.
 
 ## Branches
 
@@ -40,12 +52,13 @@ crystal-OAF-MAF/
 
 ## Development sequence
 
-1. Verify the crystal/OAF/MAF baseline numerically.
-2. Calibrate phase-local dielectric and polarization parameters.
-3. Add HHTT through experimentally supported phase-allocation / local-energy couplings.
-4. Add free-volume holes through dielectric / relaxation couplings.
-5. Extend to vector polarization and local chain orientation.
-6. Add folded-boundary / internal-strain coupling.
-7. Connect DFT / MD / MLP outputs to phase-field parameters.
+1. Verify crystal/OAF/IAF morphology and heterogeneous electrostatics numerically.
+2. Calibrate same-state broadband dielectric relaxation without mixing it with TDGL time.
+3. Add frozen ferroelectric sources and quantify orientation/morphology sensitivity.
+4. Calibrate texture/waviness and phase-resolved remanent polarization when quantitative source data become available.
+5. Introduce field-dependent beta/OAF switching only after the static-source audit is closed.
+6. Calibrate physical TDGL free-energy curvature, gradient coefficient and seconds-per-TDGL-time mapping.
+7. Add HHTT and free-volume couplings with source-specific phase allocation.
+8. Connect DFT / MD / MLP outputs to phase-field parameters.
 
-**Current parameter sets are dimensionless verification parameters unless a source is explicitly recorded in `docs/model_notes/PARAMETER_PROVENANCE.md`.**
+**A numerical value is physical only when its provenance status and source/state are recorded in `docs/model_notes/PARAMETER_PROVENANCE.md`.**
