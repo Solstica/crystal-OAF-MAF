@@ -56,3 +56,5 @@ jobs:
         run: python scripts/run_v0116_frozen_source_orientation.py
       - name: v0.1.17 Huang-aligned lamellar waviness sensitivity
         run: python scripts/run_v0117_lamellar_waviness.py
+      - name: v0.1.18 Huang-SAXS orientation-constrained scan
+        run: python scripts/run_v0118_orientation_constrained_scan.py
