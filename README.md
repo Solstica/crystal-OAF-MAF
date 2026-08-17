@@ -11,8 +11,8 @@ The current mainline is **source-first reproduction of published ferroelectric-p
 ### Current literature anchors
 
 1. **Guo et al., Nature Communications 15, 348 (2024)** — vector TDGL / polar-spiral target. The one-axis Landau slice and homogeneous strong/weak angular-anisotropy contrast are reconstructed from the source. Exact full spiral reproduction is currently source-gated because the available paper/SI do not numerically specify all PDE inputs such as `kappa_ij`, `L`, FEM discretization and initialization.
-2. **Ahluwalia et al., Physical Review B 78, 054110 (2008)** — primary multiscale-method and next complete solver anchor. The full paper explicitly maps MD thermodynamics, domain walls, fluctuations, relaxation time and cell volume into LGD/TDGL quantities.
-3. **Su et al., Nature Communications 13, 4867 (2022)** — beta-PVDF homogeneous benchmark. Eq. (4), Eq. (5) and Supplementary Table 3 are now executable; the full domain map is source-gated because the provided source does not tabulate all gradient/kinetic inputs.
+2. **Ahluwalia et al., Physical Review B 78, 054110 (2008)** — primary multiscale-method and next complete solver anchor. The full paper explicitly maps MD thermodynamics, domain walls, fluctuations, relaxation time and cell volume into LGD/TDGL quantities. Its homogeneous `P(T)` and intrinsic spinodal layer is now reproduced from the printed Table-II coefficients.
+3. **Su et al., Nature Communications 13, 4867 (2022)** — beta-PVDF homogeneous benchmark. Eq. (4), Eq. (5) and Supplementary Table 3 are executable; the full domain map is source-gated because the provided source does not tabulate all gradient/kinetic inputs.
 4. **Huang/Rui crystal-OAF-IAF evidence** enters only after the published polymer baselines identify which continuum coefficients can legitimately be replaced.
 5. **DFT/MD/MLP** is then used to generate the atomistic observables needed to calibrate those coefficients, rather than supplying arbitrary phenomenological numbers.
 
@@ -49,7 +49,9 @@ tests/test_ahluwalia2008_multiscale.py
 docs/model_notes/AHLUWALIA2008_MULTISCALE_REPRODUCTION.md
 ```
 
-The code preserves directly printed source values separately from quantities re-derived from rounded tables. In particular, re-applying Eqs. (2)-(3) to the rounded Table-I MD numbers does not regenerate Table II exactly; printed Table II therefore remains authoritative.
+The code preserves directly printed source values separately from quantities re-derived from rounded tables. Re-applying Eqs. (2)-(3) to rounded Table-I MD numbers does not regenerate Table II exactly, so printed Table II remains authoritative.
+
+Using the printed Table-II LGD coefficients, the source equation gives `P(0 K)=0.111450 C m^-2`, `P(450 K)=0.088164 C m^-2`, and an implied first-order coexistence temperature `450.133 K`; these small offsets from printed Table I are consistent with table rounding. At the declared 300 K regression point, the positive-branch homogeneous spinodal is `|Ec|=1.46443 GV m^-1`.
 
 The future MLP bridge follows the paper's observable-based logic:
 
@@ -74,7 +76,7 @@ The module directly encodes the published uniaxial PVDF bulk free energy and Sup
 
 ## Next numerical stage
 
-The next **source-complete solver validation** is Ahluwalia 2008: first reproduce the homogeneous `P(T)` / intrinsic `P-E` thermodynamics from the printed LGD coefficients, then the stochastic vector TDGL calibration and switching protocol. This gives us a complete numerical backbone before inserting crystal/OAF/IAF physics.
+The next **source-complete solver validation** is now the spatial part of Ahluwalia 2008: implement the paper's dimensionless stochastic vector TDGL, transverse susceptibilities, MD-calibrated noise amplitudes, gradient coefficients and electrostatic constraint, then reproduce the 300 K fluctuation/time-scale match before attempting the film-switching snapshots and P-E loops.
 
 Guo 2024 remains the topological target, but exact full spiral reproduction is not forced by guessing its unreported dielectric/kinetic/mesh/initialization inputs. Any interim Guo PDE run with project-chosen values must be labeled sensitivity analysis rather than source reproduction.
 
