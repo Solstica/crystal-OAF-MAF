@@ -1,12 +1,14 @@
 import numpy as np
 
 from pvdf_pf.core.grid import Grid2D
+from pvdf_pf.morphology.orientation_constraint import amplitude_for_target_rms_nz
 from pvdf_pf.morphology.orientation_ensemble import (
     HarmonicMode,
     scale_for_target_rms_normal,
     spectral_orientation_metrics,
     spectral_three_phase,
 )
+from pvdf_pf.morphology.oriented import wavy_winding_three_phase
 from pvdf_pf.morphology.three_phase import CRYSTAL, OAF, MAF
 
 
@@ -61,6 +63,42 @@ def test_higher_mode_requires_smaller_coordinate_scale_for_same_rms():
     scale_k2 = scale_for_target_rms_normal(grid, (HarmonicMode(2, 1.0),), target)
     assert scale_k2 < scale_k1
     assert np.isclose(scale_k2 / scale_k1, 0.5, rtol=0.03)
+
+
+def test_single_k1_is_exactly_the_v0118_morphology_family():
+    grid = Grid2D(nz=48, nx=48)
+    fc = 5.78 / 11.8
+    fo = 3.02 / 11.8
+    fi = 3.00 / 11.8
+    target = 0.10
+
+    amplitude_v0118 = amplitude_for_target_rms_nz(grid, target, mode_z=1, mode_x=0)
+    scale_v0119 = scale_for_target_rms_normal(
+        grid, (HarmonicMode(1, 1.0, 0.0),), target
+    )
+    assert np.isclose(scale_v0119, amplitude_v0118, rtol=0.0, atol=1e-12)
+
+    phase_v0118 = wavy_winding_three_phase(
+        grid,
+        crystal_fraction=fc,
+        oaf_fraction=fo,
+        maf_fraction=fi,
+        winding_z=0,
+        winding_x=1,
+        waviness_amplitude=amplitude_v0118,
+        waviness_mode_z=1,
+        waviness_mode_x=0,
+    )
+    phase_v0119, n_nd = spectral_three_phase(
+        grid,
+        crystal_fraction=fc,
+        oaf_fraction=fo,
+        iaf_fraction=fi,
+        modes=(HarmonicMode(1, 1.0, 0.0),),
+        scale=scale_v0119,
+    )
+    assert np.array_equal(phase_v0119, phase_v0118)
+    assert np.isclose(np.sqrt(np.mean(n_nd**2)), target, atol=1e-12)
 
 
 def test_invalid_harmonic_mode_is_rejected():
