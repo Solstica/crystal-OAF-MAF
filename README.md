@@ -10,9 +10,9 @@ The current mainline is **source-first reproduction of published ferroelectric-p
 
 ### Current literature anchors
 
-1. **Guo et al., Nature Communications 15, 348 (2024)** — vector TDGL / polar-spiral phase-field benchmark. The one-axis Landau slice is reproduced exactly from S2/S3; the homogeneous strong/weak angular-anisotropy contrast in Fig. S16 is now reconstructed using source coefficients and a published cross-check of the contracted sixth-order convention.
-2. **Ahluwalia et al., Physical Review B 78, 054110 (2008)** — now the primary multiscale-method anchor because the full article explicitly maps MD thermodynamics, domain walls, fluctuations, relaxation time and cell volume into LGD/TDGL quantities.
-3. **Su et al., Nature Communications 13, 4867 (2022)** — beta-PVDF benchmark and explicit published reference for the conventional sixth-order Landau expansion and uniaxial PVDF bulk energy.
+1. **Guo et al., Nature Communications 15, 348 (2024)** — vector TDGL / polar-spiral target. The one-axis Landau slice and homogeneous strong/weak angular-anisotropy contrast are reconstructed from the source. Exact full spiral reproduction is currently source-gated because the available paper/SI do not numerically specify all PDE inputs such as `kappa_ij`, `L`, FEM discretization and initialization.
+2. **Ahluwalia et al., Physical Review B 78, 054110 (2008)** — primary multiscale-method and next complete solver anchor. The full paper explicitly maps MD thermodynamics, domain walls, fluctuations, relaxation time and cell volume into LGD/TDGL quantities.
+3. **Su et al., Nature Communications 13, 4867 (2022)** — beta-PVDF homogeneous benchmark. Eq. (4), Eq. (5) and Supplementary Table 3 are now executable; the full domain map is source-gated because the provided source does not tabulate all gradient/kinetic inputs.
 4. **Huang/Rui crystal-OAF-IAF evidence** enters only after the published polymer baselines identify which continuum coefficients can legitimately be replaced.
 5. **DFT/MD/MLP** is then used to generate the atomistic observables needed to calibrate those coefficients, rather than supplying arbitrary phenomenological numbers.
 
@@ -30,6 +30,7 @@ scripts/reproduce_guo2024_s16_landau.py
 tests/test_guo2024_landau_axis.py
 tests/test_guo2024_vector_landau.py
 docs/model_notes/GUO2024_REPRODUCTION.md
+docs/model_notes/GUO2024_REPRODUCIBILITY_GAPS.md
 ```
 
 The branch distinguishes two claim levels:
@@ -60,9 +61,22 @@ DFT / MLP atomistic data
 -> phase-field predictions
 ```
 
+### Su 2022
+
+```text
+src/pvdf_pf/literature/su2022.py
+scripts/reproduce_su2022_pvdf_landau.py
+tests/test_su2022_pvdf.py
+docs/model_notes/SU2022_PVDF_REPRODUCTION.md
+```
+
+The module directly encodes the published uniaxial PVDF bulk free energy and Supplementary Table-3 coefficients. `eps_b` remains an explicit argument in the electrostatic helper because the source varies it with MXene content. The report's 300/315/330 K minima are project algebra checks at declared temperatures, not source-reported simulation outputs.
+
 ## Next numerical stage
 
-The next full solver milestone is **Guo 2024 vector TDGL under the published short-circuit boundary condition**, first with Landau + gradient + electrostatics, then with the source elastic/electrostrictive model under its stated low-field limitation. The target is the qualitative weak-anisotropy spiral texture of main Fig. 3e / Supplementary Fig. S16d before attempting field/stress-driven rotation in S17-S19.
+The next **source-complete solver validation** is Ahluwalia 2008: first reproduce the homogeneous `P(T)` / intrinsic `P-E` thermodynamics from the printed LGD coefficients, then the stochastic vector TDGL calibration and switching protocol. This gives us a complete numerical backbone before inserting crystal/OAF/IAF physics.
+
+Guo 2024 remains the topological target, but exact full spiral reproduction is not forced by guessing its unreported dielectric/kinetic/mesh/initialization inputs. Any interim Guo PDE run with project-chosen values must be labeled sensitivity analysis rather than source reproduction.
 
 No project-defined morphology spectrum, frozen beta/OAF source allocation, OAF decay profile or image-derived morphology constraint is permitted inside the literature-reproduction benchmark.
 
