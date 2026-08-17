@@ -55,6 +55,53 @@ Applying the printed equations to the **rounded values printed in Table I** give
 
 This is a useful reproducibility result: Table I is printed with insufficient precision to regenerate Table II exactly. Therefore **the directly printed Table II is authoritative for source reproduction**. The re-derived values are retained only as `PROJECT_REDERIVED_FROM_ROUNDED_SOURCE_VALUES` and must not overwrite Table II.
 
+### Homogeneous P(T) checkpoint from printed Table II
+
+The positive nonzero stationary branch of the printed Eq. (1) has
+
+```text
+P^2 = [beta + sqrt(beta^2 - 4 gamma alpha0(T-T0))] / (2 gamma).
+```
+
+Using **the directly printed Table-II coefficients**, not the re-derived rounded-Table-I fit, gives
+
+| T | project-derived stationary `P` |
+|---:|---:|
+| 0 K | 0.11145019 C m^-2 |
+| 300 K | 0.09932864 C m^-2 |
+| 450 K | 0.08816395 C m^-2 |
+
+The 0 K and 450 K values differ from the printed Table-I `P0=0.111` and `Pc=0.088` only by the expected rounding of the published tables.
+
+For the first-order polynomial, exact coexistence implied by rounded Table II is
+
+```text
+Tc = 450.1332774 K
+Pc = 0.08814914 C m^-2,
+```
+
+rather than exactly 450 K and 0.088 C m^-2. This ~0.13 K mismatch is another independent indication that the printed coefficients are rounded.
+
+### Homogeneous intrinsic P-E checkpoint
+
+For homogeneous field-controlled switching,
+
+```text
+E(P,T) = df/dP
+       = alpha0(T-T0) P - beta P^3 + gamma P^5.
+```
+
+Loss of stability of the positive ferroelectric branch satisfies `dE/dP=0`. At a declared 300 K checkpoint, the printed Table-II parameters give
+
+```text
+P_spinodal = 0.07781500 C m^-2
+E_switch(+ -> -) = -1.46442874e9 V m^-1.
+```
+
+The magnitude, `1.464 GV m^-1`, is consistent with the field scale of the source Fig. 3. It is a deterministic calculation from the source equation and coefficients, not a separately quoted paper number.
+
+The homogeneous thermodynamic layer is therefore now closed sufficiently to use as the first solver regression target before stochastic spatial TDGL.
+
 ## 2. Domain-wall width: MD -> gradient coefficients
 
 The source constructs two 180-degree domain walls and estimates
@@ -148,10 +195,10 @@ tests/test_ahluwalia2008_multiscale.py
 scripts/reproduce_ahluwalia2008_multiscale.py
 ```
 
-The JSON report preserves direct printed quantities separately from values re-derived from rounded tables, and keeps `K3` explicitly marked as a source computational assumption.
+The JSON report preserves direct printed quantities separately from values re-derived from rounded tables, records the homogeneous P(T)/intrinsic-spinodal checkpoints, and keeps `K3` explicitly marked as a source computational assumption.
 
-## Remaining reproduction before using it as our physical model
+## Remaining reproduction before using it as solver validation
 
-This checkpoint reconstructs the **parameter-transfer logic**, not yet the full Fig. 6/Fig. 7 switching simulations. A full numerical reproduction would additionally require implementing the stochastic vector TDGL, the susceptibility terms for transverse polarization, electrostatic boundary conditions, film-thickness series and the time-dependent voltage protocol exactly as printed.
+The next stage is the spatial stochastic TDGL rather than more homogeneous fitting. It must implement the source's transverse susceptibility terms, dimensionless rescaling, gradient coefficients, electrostatic constraint, noise calibration and film switching boundary conditions before moving to Fig. 6/Fig. 7.
 
-That full switching reproduction is useful as a solver validation, but it is not required before we can adopt the paper's atomistic-to-continuum calibration architecture for planning our own MLP data products.
+A successful switching reproduction would validate the numerical backbone. It still would not make the ideal all-trans 70:30 model a direct physical model of semicrystalline BOPVDF; crystal/OAF/IAF physics remains a subsequent substitution/calibration step.
