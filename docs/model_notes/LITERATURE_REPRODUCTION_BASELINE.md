@@ -6,133 +6,130 @@ This branch resets the main development logic from project-defined sensitivity s
 
 The v0.1.16-v0.1.19 morphology/frozen-source studies remain in repository history as numerical sensitivity experiments. They are **not** treated as literature-reproduced phase-field physics and are not extended further until a published ferroelectric-polymer phase-field baseline has been reproduced.
 
-The next development rule is:
+The development rule is:
 
-1. reproduce a published PVDF/P(VDF-TrFE) phase-field model using the paper's own equations, coefficients, boundary conditions and target figures;
-2. document every quantity that is not explicitly reported;
-3. only after the baseline closes, replace or augment a published coefficient with Huang/Rui crystal-OAF-IAF evidence or atomistic/MLP output.
+1. reproduce published PVDF/P(VDF-TrFE) continuum models using the papers' own equations, coefficients, boundary conditions and target observables;
+2. distinguish directly printed quantities from values re-derived from rounded tables or reconstructed from a published convention;
+3. preserve every source approximation as an approximation rather than silently upgrading it to a material constant;
+4. only after a baseline closes, replace or augment an identified continuum input with Huang/Rui crystal-OAF-IAF evidence or atomistic/MLP output.
 
-## Candidate 1 — Ahluwalia et al., Phys. Rev. B 78, 054110 (2008)
-
-**Title:** *Multiscale kinetic model for polarization switching in ferroelectric polymer thin films*  
-**DOI:** 10.1103/PhysRevB.78.054110
-
-### Why it matters
-
-This is the closest published precedent to the long-term project goal. The authors parameterize a continuum Landau-Ginzburg-Devonshire model for ideal all-trans P(VDF-TrFE) 70:30 using molecular-dynamics data. They also set length scale, time scale and thermal-noise amplitude from MD and then solve a time-dependent Ginzburg-Landau switching model.
-
-Therefore this paper is the **multiscale-method anchor** for the future DFT/MD/MLP -> phase-field bridge. It directly establishes that atomistic data can be used to parameterize a ferroelectric-polymer continuum switching model rather than merely serving as qualitative reference.
-
-### Current reproducibility status
-
-The publisher abstract and bibliographic record are verified, but the complete article text/parameter table is not present in the current local source set. We therefore do **not** transcribe coefficients from secondary citations or reconstruct them from memory.
-
-Status: `PRIMARY_TARGET_WAITING_FULL_TEXT`.
-
-Required before exact reproduction: full article PDF (or an author manuscript containing equations, MD-to-LGD fitting relations, scales, noise strength and numerical protocol).
-
-## Candidate 2 — Guo et al., Nature Communications 15, 348 (2024)
+## Anchor A — Guo et al., Nature Communications 15, 348 (2024)
 
 **Title:** *Electrically and mechanically driven rotation of polar spirals in a relaxor ferroelectric polymer*  
 **DOI:** 10.1038/s41467-023-44395-5
 
-### Published phase-field model
+### Published model
 
-The order parameter is the polarization vector
+The order parameter is vector polarization `P=(Px,Py,Pz)`, evolved by TDGL. The total energy contains Landau, gradient, elastic/electrostrictive and electric terms. The source simulates a 10-nm-thick, 345-nm-radius P(VDF-TrFE) nanodisk at 25 C under short circuit using finite elements.
 
-`P = (Px, Py, Pz)`.
+The SI gives strong- and weak-anisotropy coefficient sets and Supplementary Fig. S16 provides a direct energy-surface/polarization-texture target.
 
-The temporal evolution is the published TDGL equation
+### Current reproduction status
 
-`dPi/dt = -L delta F/delta Pi`.
+- Stage 1: exact one-axis source polynomial — closed.
+- Stage 2a: homogeneous three-component angular anisotropy — closed at a **source-constrained qualitative** level.
+- The expanded sixth-order convention is not printed by Guo, so the repository cross-checks it against the explicit conventional polynomial printed by Su et al. 2022 rather than inventing multiplicities.
+- Pixel-exact Fig. S16 surface rendering is not claimed because its graphical normalization is not reported.
+- Vector TDGL/gradient/electrostatic and elastic spiral reproduction remain open.
 
-The total free energy contains the four standard contributions printed in the article:
+Status: `EXECUTABLE_PRIMARY_PHASE_FIELD_BENCHMARK`.
 
-`F = integral_V (f_Land + f_grad + f_elas + f_ele) dV`.
+### Important source limitation
 
-The article explicitly gives
+The Guo peer-review record documents a reviewer challenge to the linear elastic/cubic-parent treatment. The authors defend it only for the low-field linear-elastic regime, with stresses no larger than about 12 MPa, and describe the phase-field result as semi-quantitative for the rotational mechanism before destruction. This scope limitation is inherited by our reproduction.
 
-- generic sixth-order Landau free energy;
-- gradient energy `0.5 G_ijkl P_i,j P_k,l`;
-- elastic energy `0.5 C_ijkl (eps_ij-eps0_ij)(eps_kl-eps0_kl)`;
-- electrostrictive eigenstrain `eps0_ij = Q_ijkl P_k P_l`;
-- electric energy `-Ei(Pi + 0.5 eps0 kappa_ij Ej)`.
+## Anchor B — Ahluwalia et al., Phys. Rev. B 78, 054110 (2008)
 
-The simulated P(VDF-TrFE) nanodisk is 10 nm thick with radius 345 nm, short-circuit electrical boundary condition, at 25 C. The authors used finite elements.
+**Title:** *Multiscale kinetic model for polarization switching in ferroelectric polymer thin films*  
+**DOI:** 10.1103/PhysRevB.78.054110
 
-### Direct parameter set available in the Supplementary Information
+### Why it is now central
 
-Supplementary Table S3 gives the weak-anisotropy coefficients used to obtain the polar-spiral state:
+The full primary article is now available. It provides the clearest published atomistic-to-continuum transfer chain for a ferroelectric polymer:
 
-| coefficient | published value |
-|---|---:|
-| `alpha1` | `1.412 (T-42) x 10^5 J m C^-2` |
-| `alpha11` | `-1.842 x 10^8 J m^5 C^-4` |
-| `alpha12` | `-1.4736 x 10^9 J m^5 C^-4` |
-| `alpha111` | `2.585 x 10^12 J m^9 C^-6` |
-| `alpha112` | `9.6 x 10^12 J m^9 C^-6` |
-| `alpha123` | `1.0857 x 10^13 J m^9 C^-6` |
-| `c11` | `4.88 x 10^10 J m^-3` |
-| `c12` | `5.6 x 10^9 J m^-3` |
-| `c44` | `2.16 x 10^10 J m^-3` |
-| `Q11` | `-0.0162 m^4 C^-2` |
-| `Q12` | `0.0441 m^4 C^-2` |
-| `Q44` | `-0.12 m^4 C^-2` |
-| `G11` | `9.96 x 10^-10 J m^3 C^-2` |
-| `G12` | `0` |
-| `G44/G44'` | `4.98 x 10^-10 J m^3 C^-2` |
+```text
+MD P(T), Pc, Tc, phase-energy difference -> homogeneous LGD coefficients
+MD 180-degree domain walls -> K1, K2 gradient coefficients
+MD fluctuations -> stochastic TDGL noise amplitudes / kinetic anisotropy
+MD equilibration time -> physical TDGL time scale
+MD cell volume -> continuum grid scale
+```
 
-Supplementary Table S2 separately reports the strong-anisotropy control set. We will not infer omitted cross-coefficients from that table unless the source explicitly defines them.
+The printed Table-I MD observables and Table-II LGD coefficients are now encoded separately. Re-applying the paper's Eqs. (2)-(3) to the rounded Table-I numbers gives percent-level differences from printed Table II, demonstrating that Table II must remain authoritative for exact source reproduction.
 
-### Reproduction target
+The paper directly reports `K1=K2=2.108e-8 J m^3 C^-2` from MD-estimated ~0.4 nm domain-wall widths. It explicitly states that `K3` could not be atomistically obtained from unstable head-to-head/tail-to-tail walls and was set equal to `K1=K2` for computational convenience. That distinction is preserved in code.
 
-This paper is selected as the **first executable benchmark** because its open article and SI provide enough information to begin a source-faithful implementation now.
+The source also reports matched stochastic-noise amplitudes and a mapping of approximately 9 ps per dimensionless TDGL time unit.
 
-Reproduction order:
+Status: `EXECUTABLE_MULTISCALE_ANCHOR`.
 
-1. one-dimensional Landau axis slices using only directly listed coefficients;
-2. weak-anisotropy Landau surface, after checking the coefficient-index expansion convention against the source/reference chain;
-3. short-circuit vector TDGL without external stress;
-4. reproduce the qualitative low-anisotropy polar texture shown in main Fig. 3e / Supplementary Fig. S16d;
-5. only then add elastic/electrostrictive and field-driven evolution needed for Supplementary Figs. S17-S19.
+This paper is the principal methodological template for deciding **what an MLP must actually predict or reproduce before a phase-field coefficient can be calibrated**.
 
-Status: `EXECUTABLE_PRIMARY_BENCHMARK`.
-
-## Candidate 3 — Su et al., Nature Communications 13, 4867 (2022)
+## Anchor C — Su et al., Nature Communications 13, 4867 (2022)
 
 **Title:** *High-performance piezoelectric composites via beta phase programming*  
 **DOI:** 10.1038/s41467-022-32518-3
 
 ### Published PVDF phase-field model
 
-The article explicitly uses vector TDGL and the same four free-energy classes. For PVDF it prints the uniaxial bulk energy
+The article explicitly prints a sixth-order conventional vector Landau polynomial for the ceramic and a uniaxial PVDF bulk energy
 
-`f_bulk = alpha1 Px^2 + alpha2 Py^2 + alpha3 Pz^2 + alpha33 Pz^4 + alpha333 Pz^6`,
+```text
+f_bulk = alpha1 Px^2 + alpha2 Py^2 + alpha3 Pz^2
+       + alpha33 Pz^4 + alpha333 Pz^6,
+```
 
-with spontaneous polarization along the electrospinning/poling `z` direction. The electrostatic equilibrium equation is
+with spontaneous polarization along the electrospinning/poling `z` direction. It also prints
 
-`div(eps0 eps_b E + P) = 0`.
+```text
+div(eps0 eps_b E + P) = 0.
+```
 
-The reported simulation cell is 512 x 512 x 512 nm^3, discretized on 128^3 nodes (4 nm spacing), with periodic boundary conditions for polarization, electric field and mechanical displacement, under `1.2 x 10^5 V/m` applied field. The paper states that PVDF constants are in Supplementary Table 3.
+The simulation is 512 x 512 x 512 nm^3 on 128^3 nodes (`4 nm` spacing), with periodic field boundary conditions and an applied field of `1.2e5 V/m`. The supplementary file directly supplies the PVDF coefficients.
 
 ### Why it matters
 
-This is the cleanest directly printed **uniaxial beta-PVDF Landau form** among the selected papers and is structurally closer to the scalar-polarization simplifications previously used in this repository. It is therefore the second executable transfer benchmark after Guo 2024.
+Su 2022 serves two roles:
 
-Status: `SECONDARY_EXECUTABLE_BENCHMARK`; full SI parameter transcription still needs to be completed from the primary supplementary file.
+1. a clean beta-PVDF uniaxial benchmark;
+2. an explicit published check of the contracted sixth-order Landau polynomial convention used to expand the Guo S3 coefficient set.
 
-## Selection decision
+Status: `SECONDARY_EXECUTABLE_BENCHMARK`.
 
-The project will **not** continue from v0.1.19 into v0.1.20 morphology inventions.
+## Revised reproduction order
 
-The literature-reproduction mainline is now:
+Now that the full Ahluwalia paper is available, the sequence is no longer limited by missing source text:
 
-`Guo 2024 exact/source-faithful benchmark -> Su 2022 beta-PVDF benchmark -> Ahluwalia 2008 MD-to-LGD bridge once full text is available -> Huang/Rui crystal-OAF-IAF substitution -> project DFT/MD/MLP parameter generation`.
+```text
+Guo 2024 homogeneous Landau/S16 anisotropy
+-> Ahluwalia 2008 MD-to-LGD/gradient/noise/time transfer audit
+-> Su 2022 beta-PVDF uniaxial benchmark
+-> Guo 2024 vector TDGL + weak-anisotropy spiral benchmark
+-> Huang/Rui crystal-OAF-IAF substitution at identified coefficients
+-> project DFT/MD/MLP generation of unresolved atomistic observables
+-> re-fit continuum coefficients and validate against experiments
+```
 
-The reason Guo 2024 is executed first rather than Ahluwalia 2008 is practical reproducibility, not scientific priority: Guo's complete open SI exposes the coefficients and target structures, while the full Ahluwalia parameterization is not yet in the current source set.
+The reason for doing the Ahluwalia transfer audit before the full Guo spiral solver is scientific: it fixes the project architecture for cross-scale parameterization, so later code does not accidentally treat phenomenological coefficients as arbitrary fitting knobs.
 
-## Evidence boundary
+## What the eventual MLP bridge is allowed to do
 
-Huang 2021 and Rui 2021/2022 remain the experimental source for crystal/OAF/IAF structure and amorphous dynamics. They do not by themselves provide a complete crystal/OAF/IAF TDGL free-energy parameterization. Their data must therefore enter only after a published polymer phase-field baseline has been reproduced and the exact continuum coefficient being replaced is identified.
+The preferred bridge is observable-based rather than coefficient-by-coefficient black-box regression:
 
-No `PROJECT_IMAGE_DERIVED_CONSTRAINT`, sinusoidal waviness spectrum, frozen beta/OAF source allocation, or project-defined OAF decay profile is permitted in the reproduction benchmark.
+```text
+DFT / MLP atomistic trajectories
+  -> phase energies and P(T)
+  -> wall profiles / excess energies
+  -> elastic and dielectric response
+  -> fluctuation statistics and relaxation times
+  -> calibrated LGD / gradient / electrostrictive / kinetic / noise parameters
+  -> phase-field observables
+```
+
+A direct MLP prediction of an LGD coefficient is acceptable only when the training target has an unambiguous source definition and the resulting continuum model is independently validated.
+
+## Evidence boundary for crystal / OAF / IAF
+
+Huang 2021 and Rui 2021/2022 remain the experimental sources for crystal/OAF/IAF structure and amorphous dynamics. They do not by themselves provide a complete three-phase TDGL free-energy parameterization. Their data enter only after a published polymer phase-field baseline is reproduced and the exact continuum quantity being replaced is identified.
+
+No `PROJECT_IMAGE_DERIVED_CONSTRAINT`, sinusoidal waviness spectrum, frozen beta/OAF source allocation, or project-defined OAF decay profile is permitted in a literature-reproduction benchmark.
