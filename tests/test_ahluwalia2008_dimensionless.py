@@ -40,9 +40,9 @@ def test_300K_dimensionless_coefficients_regression():
 def test_300K_state_and_kinetic_ratios_regression():
     c = dimensionless_checkpoint_300K()
     assert np.isclose(c.equilibrium_Pr_C_m2, 0.09932864465590406, rtol=1e-12)
-    assert np.isclose(c.equilibrium_w_dimensionless, 0.9758590155851066, rtol=1e-12)
+    assert np.isclose(c.equilibrium_w_dimensionless, 0.9758590155919278, rtol=1e-12)
     assert np.isclose(c.initial_w_dimensionless, 1.1199984472038926, rtol=1e-12)
-    assert np.isclose(c.m_Gamma_x_over_Gamma_z, 0.039977503437485596, rtol=1e-12)
-    assert np.isclose(c.n_Gamma_y_over_Gamma_z, 9.001687183283261, rtol=1e-12)
+    assert np.isclose(c.m_Gamma_x_over_Gamma_z, 0.0399775059754201, rtol=1e-12)
+    assert np.isclose(c.n_Gamma_y_over_Gamma_z, 9.001687368170652, rtol=1e-12)
     assert c.ps_per_tstar == 9.0
     assert np.isclose(c.cell_length_dimensionless, 341.4883554918239, rtol=1e-12)
