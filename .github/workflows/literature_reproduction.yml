@@ -32,6 +32,7 @@ jobs:
           tests/test_guo2024_landau_axis.py
           tests/test_guo2024_vector_landau.py
           tests/test_ahluwalia2008_multiscale.py
+          tests/test_ahluwalia2008_dimensionless.py
           tests/test_su2022_pvdf.py
       - name: Guo 2024 Landau-axis reproduction
         run: python scripts/reproduce_guo2024_landau_axis.py
@@ -39,6 +40,8 @@ jobs:
         run: python scripts/reproduce_guo2024_s16_landau.py
       - name: Ahluwalia 2008 multiscale transfer audit
         run: python scripts/reproduce_ahluwalia2008_multiscale.py
+      - name: Ahluwalia 2008 dimensionless 300K audit
+        run: python scripts/reproduce_ahluwalia2008_dimensionless.py
       - name: Su 2022 beta-PVDF homogeneous checkpoint
         run: python scripts/reproduce_su2022_pvdf_landau.py
       - name: Upload reproduction checkpoints
@@ -49,5 +52,6 @@ jobs:
             outputs/literature_reproduction/guo2024_landau_axis/report.json
             outputs/literature_reproduction/guo2024_s16_landau/report.json
             outputs/literature_reproduction/ahluwalia2008_multiscale/report.json
+            outputs/literature_reproduction/ahluwalia2008_dimensionless/report.json
             outputs/literature_reproduction/su2022_pvdf_landau/report.json
           if-no-files-found: error
